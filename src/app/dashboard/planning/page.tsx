@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
-import AccountsClient from './AccountsClient'
-import type { AccountType, AccountSnapshot } from '@/types/database'
+import PlanningClient from './PlanningClient'
+import type { AccountType, AccountSnapshot, RecurringPlan } from '@/types/database'
 
-export default async function AccountsPage() {
+export default async function PlanningPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
 
@@ -20,25 +21,16 @@ export default async function AccountsPage() {
     .eq('user_id', user!.id)
     .order('snapshot_date', { ascending: false })
 
-  const { data: transactions } = await db
-    .from('transactions')
-    .select('*')
-    .eq('user_id', user!.id)
-    .order('date', { ascending: false })
-    .order('created_at', { ascending: false })
-
   const { data: recurringPlans } = await db
     .from('recurring_plans')
     .select('*')
     .eq('user_id', user!.id)
-    .order('created_at', { ascending: true })
 
   return (
-    <AccountsClient
+    <PlanningClient
       accountTypes={(accountTypes as AccountType[]) ?? []}
       snapshots={(snapshots as AccountSnapshot[]) ?? []}
-      transactions={transactions ?? []}
-      recurringPlans={recurringPlans ?? []}
+      recurringPlans={(recurringPlans as RecurringPlan[]) ?? []}
     />
   )
 }

@@ -11,12 +11,15 @@ import {
   LineChart,
   BarChart3,
   LogOut,
+  Home,
+  Calendar,
 } from 'lucide-react'
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/dashboard/accounts', label: 'Contas', icon: Wallet },
   { href: '/dashboard/stocks', label: 'Ações', icon: TrendingUp },
+  { href: '/dashboard/planning', label: 'Planejamento', icon: Calendar },
   { href: '/dashboard/charts', label: 'Gráficos', icon: BarChart3 },
 ]
 

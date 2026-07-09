@@ -122,6 +122,76 @@ export interface Database {
           created_at?: string
         }
       }
+      transactions: {
+        Row: {
+          id: string
+          user_id: string
+          account_type_id: string | null
+          amount: number
+          type: 'income' | 'expense'
+          date: string
+          description: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          account_type_id?: string | null
+          amount: number
+          type: 'income' | 'expense'
+          date?: string
+          description?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          account_type_id?: string | null
+          amount?: number
+          type?: 'income' | 'expense'
+          date?: string
+          description?: string | null
+          created_at?: string
+        }
+      }
+      recurring_plans: {
+        Row: {
+          id: string
+          user_id: string
+          account_type_id: string | null
+          name: string
+          amount: number
+          type: 'income' | 'expense'
+          frequency: 'monthly' | 'yearly' | 'one-time'
+          target_date: string | null
+          last_processed_date: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          account_type_id?: string | null
+          name: string
+          amount: number
+          type: 'income' | 'expense'
+          frequency: 'monthly' | 'yearly' | 'one-time'
+          target_date?: string | null
+          last_processed_date?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          account_type_id?: string | null
+          name?: string
+          amount?: number
+          type?: 'income' | 'expense'
+          frequency?: 'monthly' | 'yearly' | 'one-time'
+          target_date?: string | null
+          last_processed_date?: string | null
+          created_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -140,6 +210,8 @@ export type AccountType = Database['public']['Tables']['account_types']['Row']
 export type AccountSnapshot = Database['public']['Tables']['account_snapshots']['Row']
 export type StockPosition = Database['public']['Tables']['stock_positions']['Row']
 export type StockPriceHistory = Database['public']['Tables']['stock_price_history']['Row']
+export type Transaction = Database['public']['Tables']['transactions']['Row']
+export type RecurringPlan = Database['public']['Tables']['recurring_plans']['Row']
 
 // Extended types with computed fields
 export interface AccountTypeWithLatestBalance extends AccountType {
