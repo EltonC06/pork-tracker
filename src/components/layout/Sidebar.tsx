@@ -20,12 +20,28 @@ const navItems = [
   { href: '/dashboard/charts', label: 'Gráficos', icon: BarChart3 },
 ]
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean
+  onClose?: () => void
+}
+
+export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname()
   const [showVersion, setShowVersion] = useState(false)
 
   return (
-    <aside className="sidebar">
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 30, backdropFilter: 'blur(4px)'
+          }}
+          onClick={onClose}
+        />
+      )}
+      
+      <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       {/* Logo */}
       <div style={{
         padding: '1.5rem 1.25rem',
@@ -72,6 +88,7 @@ export default function Sidebar() {
               key={href}
               href={href}
               className={`nav-item ${isActive ? 'active' : ''}`}
+              onClick={onClose}
             >
               <Icon size={18} />
               {label}
@@ -155,5 +172,6 @@ export default function Sidebar() {
         </div>
       </div>
     </aside>
+    </>
   )
 }

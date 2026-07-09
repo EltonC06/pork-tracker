@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { formatCurrency, formatPercent } from '@/lib/utils'
 import { Wallet, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
 import PatrimonyChart from '@/components/charts/PatrimonyChart'
+import KpiCard from '@/components/ui/KpiCard'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -123,113 +124,66 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {/* Patrimony Chart */}
-      <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-        <div style={{ marginBottom: '1.25rem' }}>
-          <h2 style={{ fontSize: '1.0625rem', fontWeight: '700' }}>Evolução do Patrimônio (Contas)</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>Soma de todos os saldos registrados por mês</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Patrimony Chart */}
+        <div className="glass-card lg:col-span-2" style={{ padding: '1.5rem' }}>
+          <div style={{ marginBottom: '1.25rem' }}>
+            <h2 style={{ fontSize: '1.0625rem', fontWeight: '700' }}>Evolução do Patrimônio (Contas)</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>Soma de todos os saldos registrados por mês</p>
+          </div>
+          {chartData.length > 0 ? (
+            <PatrimonyChart data={chartData} />
+          ) : (
+            <div className="empty-state" style={{ padding: '3rem 2rem' }}>
+              <div className="empty-state-icon">📊</div>
+              <p style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Nenhum dado ainda</p>
+              <p style={{ fontSize: '0.875rem', marginTop: '0.25rem' }}>
+                Registre saldos em Contas para ver o gráfico
+              </p>
+            </div>
+          )}
         </div>
-        {chartData.length > 0 ? (
-          <PatrimonyChart data={chartData} />
-        ) : (
-          <div className="empty-state" style={{ padding: '3rem 2rem' }}>
-            <div className="empty-state-icon">📊</div>
-            <p style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Nenhum dado ainda</p>
-            <p style={{ fontSize: '0.875rem', marginTop: '0.25rem' }}>
-              Registre saldos em Contas para ver o gráfico
-            </p>
+
+        {/* Account balances summary */}
+        {accountTypes && accountTypes.length > 0 && (
+          <div className="glass-card lg:col-span-1" style={{ padding: '1.5rem', height: 'fit-content' }}>
+            <h2 style={{ fontSize: '1.0625rem', fontWeight: '700', marginBottom: '1rem' }}>Saldo Atual por Conta</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {accountTypes.map(acct => {
+                const balance = accountBalances[acct.id] ?? 0
+                const pct = totalAccountBalance > 0 ? (balance / totalAccountBalance) * 100 : 0
+                return (
+                  <div key={acct.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ fontSize: '1.25rem', minWidth: '1.5rem' }}>{acct.icon ?? '💰'}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                        <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{acct.name}</span>
+                        <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                          {formatCurrency(balance)}
+                        </span>
+                      </div>
+                      <div style={{ height: '4px', background: 'var(--bg-border)', borderRadius: '2px', overflow: 'hidden' }}>
+                        <div style={{
+                          height: '100%',
+                          width: `${pct}%`,
+                          background: acct.color ?? 'var(--brand-500)',
+                          borderRadius: '2px',
+                          transition: 'width 0.5s ease',
+                        }} />
+                      </div>
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', minWidth: '3rem', textAlign: 'right' }}>
+                      {pct.toFixed(1)}%
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
       </div>
-
-      {/* Account balances summary */}
-      {accountTypes && accountTypes.length > 0 && (
-        <div className="glass-card" style={{ padding: '1.5rem' }}>
-          <h2 style={{ fontSize: '1.0625rem', fontWeight: '700', marginBottom: '1rem' }}>Saldo Atual por Conta</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {accountTypes.map(acct => {
-              const balance = accountBalances[acct.id] ?? 0
-              const pct = totalAccountBalance > 0 ? (balance / totalAccountBalance) * 100 : 0
-              return (
-                <div key={acct.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <span style={{ fontSize: '1.25rem', minWidth: '1.5rem' }}>{acct.icon ?? '💰'}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                      <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{acct.name}</span>
-                      <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                        {formatCurrency(balance)}
-                      </span>
-                    </div>
-                    <div style={{ height: '4px', background: 'var(--bg-border)', borderRadius: '2px', overflow: 'hidden' }}>
-                      <div style={{
-                        height: '100%',
-                        width: `${pct}%`,
-                        background: acct.color ?? 'var(--brand-500)',
-                        borderRadius: '2px',
-                        transition: 'width 0.5s ease',
-                      }} />
-                    </div>
-                  </div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', minWidth: '3rem', textAlign: 'right' }}>
-                    {pct.toFixed(1)}%
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
 
-function KpiCard({
-  label, value, icon, accent, sub
-}: {
-  label: string
-  value: string
-  icon: React.ReactNode
-  accent: 'brand' | 'success' | 'neutral'
-  sub?: { value: string; positive: boolean; label: string }
-}) {
-  const colors = {
-    brand: { bg: 'rgba(99,102,241,0.1)', color: 'var(--brand-400)', border: 'rgba(99,102,241,0.2)' },
-    success: { bg: 'rgba(16,185,129,0.1)', color: 'var(--success-400)', border: 'rgba(16,185,129,0.2)' },
-    neutral: { bg: 'rgba(99,102,241,0.07)', color: 'var(--text-secondary)', border: 'var(--bg-border)' },
-  }
-  const c = colors[accent]
 
-  return (
-    <div className="kpi-card">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-        <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{label}</p>
-        <div style={{
-          padding: '0.5rem',
-          background: c.bg,
-          border: `1px solid ${c.border}`,
-          borderRadius: '10px',
-          color: c.color,
-        }}>
-          {icon}
-        </div>
-      </div>
-      <p style={{ fontSize: '1.625rem', fontWeight: '800', lineHeight: 1.1 }}>{value}</p>
-      {sub && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: '0.5rem' }}>
-          {sub.positive ? (
-            <TrendingUp size={13} style={{ color: 'var(--success-400)' }} />
-          ) : (
-            <TrendingDown size={13} style={{ color: 'var(--danger-400)' }} />
-          )}
-          <span style={{
-            fontSize: '0.8125rem', fontWeight: 600,
-            color: sub.positive ? 'var(--success-400)' : 'var(--danger-400)',
-          }}>
-            {sub.value}
-          </span>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{sub.label}</span>
-        </div>
-      )}
-    </div>
-  )
-}

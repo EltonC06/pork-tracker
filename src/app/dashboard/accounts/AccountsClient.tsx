@@ -132,7 +132,7 @@ export default function AccountsClient({ accountTypes, snapshots }: Props) {
           </p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           {accountTypes.map(acct => {
             const latest = latestBalances[acct.id]
             const acctSnaps = snapshots

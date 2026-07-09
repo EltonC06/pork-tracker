@@ -10,6 +10,7 @@ import {
 } from '@/app/actions/stocks'
 import { formatCurrency, formatPercent, formatDate } from '@/lib/utils'
 import type { StockPosition } from '@/types/database'
+import KpiCard from '@/components/ui/KpiCard'
 
 interface Props {
   positions: StockPosition[]
@@ -92,27 +93,26 @@ export default function StocksClient({ positions }: Props) {
           gap: '1rem',
           marginBottom: '1.5rem',
         }}>
-          {[
-            { label: 'Total Investido', value: formatCurrency(totalInvested), color: 'var(--text-secondary)' },
-            { label: 'Valor Atual', value: formatCurrency(totalCurrent), color: 'var(--brand-400)' },
-            {
-              label: 'Resultado (R$)',
-              value: formatCurrency(totalPL),
-              color: totalPL >= 0 ? 'var(--success-400)' : 'var(--danger-400)',
-            },
-            {
-              label: 'Resultado (%)',
-              value: formatPercent(totalPLPct),
-              color: totalPLPct >= 0 ? 'var(--success-400)' : 'var(--danger-400)',
-            },
-          ].map(card => (
-            <div key={card.label} className="kpi-card" style={{ padding: '1.25rem' }}>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 500 }}>
-                {card.label}
-              </p>
-              <p style={{ fontSize: '1.25rem', fontWeight: '800', color: card.color }}>{card.value}</p>
-            </div>
-          ))}
+          <KpiCard
+            label="Total Investido"
+            value={formatCurrency(totalInvested)}
+            accent="neutral"
+          />
+          <KpiCard
+            label="Valor Atual"
+            value={formatCurrency(totalCurrent)}
+            accent="brand"
+          />
+          <KpiCard
+            label="Resultado (R$)"
+            value={formatCurrency(totalPL)}
+            accent={totalPL >= 0 ? 'success' : 'danger'}
+          />
+          <KpiCard
+            label="Resultado (%)"
+            value={formatPercent(totalPLPct)}
+            accent={totalPLPct >= 0 ? 'success' : 'danger'}
+          />
         </div>
       )}
 
