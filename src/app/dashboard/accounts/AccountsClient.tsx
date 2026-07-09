@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { Plus, Trash2, ChevronDown, ChevronUp, Pencil } from 'lucide-react'
+import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 import {
   createAccountType,
   deleteAccountType,

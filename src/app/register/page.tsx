@@ -13,12 +13,10 @@ export default function RegisterPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
-    setSuccess(null)
     const formData = new FormData(e.currentTarget)
     startTransition(async () => {
       const result = await register(formData)
-      if (result?.error) setError(result.error)
-      if (result?.success) setSuccess(result.success)
+      if (result && 'error' in result) setError(result.error)
     })
   }
 
