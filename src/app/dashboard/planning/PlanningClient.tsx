@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
+import { useReactToPrint } from 'react-to-print'
+import { Printer } from 'lucide-react'
 import type { AccountType, AccountSnapshot, RecurringPlan } from '@/types/database'
 import { formatCurrency } from '@/lib/utils'
 import {
@@ -22,6 +24,12 @@ interface Props {
 
 export default function PlanningClient({ accountTypes, snapshots, recurringPlans }: Props) {
   const [selectedAccountId, setSelectedAccountId] = useState<string>('all')
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  const handlePrint = useReactToPrint({
+    contentRef: contentRef,
+    documentTitle: 'PorkTracker_Relatorio_Anual'
+  })
 
   // Calculate base balances
   const latestBalances = useMemo(() => {
@@ -100,7 +108,7 @@ export default function PlanningClient({ accountTypes, snapshots, recurringPlans
   }, [selectedAccountId, latestBalances, recurringPlans])
 
   return (
-    <div>
+    <div ref={contentRef}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
         <div>
@@ -109,7 +117,7 @@ export default function PlanningClient({ accountTypes, snapshots, recurringPlans
             Projeção do seu fluxo de caixa para os próximos 12 meses
           </p>
         </div>
-        <div>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <select 
             className="input" 
             value={selectedAccountId} 
@@ -121,6 +129,9 @@ export default function PlanningClient({ accountTypes, snapshots, recurringPlans
               <option key={acct.id} value={acct.id}>{acct.name}</option>
             ))}
           </select>
+          <button onClick={() => handlePrint()} className="btn-secondary">
+            <Printer size={16} /> Relatório PDF
+          </button>
         </div>
       </div>
 

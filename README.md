@@ -19,7 +19,16 @@ Um sistema pessoal completo para planejamento financeiro, focado em alta perform
 - Gráficos de composição (Donut) e evolução mensal (Área/Linha).
 - Filtros rápidos por período (30 dias, 90 dias, 1 ano, tudo).
 
-### 4. Autenticação Segura
+### 4. Módulo de Planejamento (Novo)
+- Projeção de fluxo de caixa 12 meses à frente.
+- Regras de Lazy Execution para contas recorrentes (mensal, anual).
+- Previsibilidade inteligente somando ganhos, gastos e saldos atuais.
+
+### 5. Exportação de Relatórios e Backup (Novo)
+- Geração instantânea de planilhas `.xlsx` com múltiplas abas (contas, histórico, transações, carteira de ações).
+- Impressão inteligente em PDF sem quebra de layout, limpo e direto.
+
+### 6. Autenticação Segura
 - Sistema de Login e Cadastro robusto integrado via Supabase Auth.
 - Rotas protegidas via Next.js Proxy/Middleware.
 
@@ -67,8 +76,8 @@ src/
 
 ### 2. Clone o repositório e instale dependências
 ```bash
-git clone https://github.com/seu-usuario/fintrack.git
-cd fintrack
+git clone https://github.com/EltonC06/pork-tracker.git
+cd pork-tracker
 npm install
 ```
 

@@ -2,14 +2,14 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { Plus, Trash2, ChevronDown, ChevronUp, Calendar, History, BarChart2, Clock, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { Plus, Trash2, ChevronDown, ChevronUp, Calendar, History, BarChart2, Clock, ArrowUpRight, ArrowDownRight, Edit2 } from 'lucide-react'
 import {
   createAccountType,
   deleteAccountType,
   createSnapshot,
   deleteSnapshot,
 } from '@/app/actions/accounts'
-import { createTransaction } from '@/app/actions/transactions'
+import { createTransaction, updateTransaction, deleteTransaction } from '@/app/actions/transactions'
 import { createRecurringPlan, deleteRecurringPlan } from '@/app/actions/planning'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { AccountType, AccountSnapshot, Transaction, RecurringPlan } from '@/types/database'
@@ -35,6 +35,7 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
   const [showNewAccountModal, setShowNewAccountModal] = useState(false)
   const [showSnapshotModal, setShowSnapshotModal] = useState<string | null>(null)
   const [showTxModal, setShowTxModal] = useState<string | null>(null)
+  const [showEditTxModal, setShowEditTxModal] = useState<Transaction | null>(null)
   const [showPlanModal, setShowPlanModal] = useState<string | null>(null)
   
   // UI State
@@ -119,6 +120,33 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
         await createTransaction(fd)
         toast.success('Transação adicionada e saldo atualizado!')
         setShowTxModal(null)
+      } catch (err: any) {
+        toast.error(err.message)
+      }
+    })
+  }
+
+  function handleUpdateTx(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!showEditTxModal) return
+    const fd = new FormData(e.currentTarget)
+    startTransition(async () => {
+      try {
+        await updateTransaction(showEditTxModal.id, fd)
+        toast.success('Transação atualizada e saldo ajustado!')
+        setShowEditTxModal(null)
+      } catch (err: any) {
+        toast.error(err.message)
+      }
+    })
+  }
+
+  function handleDeleteTx(id: string) {
+    if (!confirm('Excluir esta transação? Seu saldo será revertido para refletir a exclusão.')) return
+    startTransition(async () => {
+      try {
+        await deleteTransaction(id)
+        toast.success('Transação excluída e saldo revertido.')
       } catch (err: any) {
         toast.error(err.message)
       }
@@ -226,33 +254,36 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
                 </div>
 
                 {/* Actions */}
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-                  <button
-                    className="btn-primary"
-                    style={{ fontSize: '0.8125rem', padding: '0.4rem 0.75rem' }}
-                    onClick={() => setShowSnapshotModal(acct.id)}
-                  >
-                    <Plus size={14} /> Atualizar Saldo
-                  </button>
-                  <button
-                    className="btn-secondary"
-                    style={{ fontSize: '0.8125rem', padding: '0.4rem 0.75rem' }}
-                    onClick={() => setShowTxModal(acct.id)}
-                  >
-                    <Plus size={14} /> Gasto / Ganho
-                  </button>
-                  <button
-                    className="btn-ghost"
-                    style={{ fontSize: '0.8125rem', padding: '0.4rem 0.75rem' }}
-                    onClick={() => setExpandedAccount(isExpanded ? null : acct.id)}
-                  >
-                    {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                    Detalhes
-                  </button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '1.25rem', gap: '1rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', flex: 1 }}>
+                    <button
+                      className="btn-primary"
+                      style={{ fontSize: '0.8125rem', padding: '0.4rem 0.75rem' }}
+                      onClick={() => setShowTxModal(acct.id)}
+                    >
+                      <Plus size={14} /> Gasto / Ganho
+                    </button>
+                    <button
+                      className="btn-secondary"
+                      style={{ fontSize: '0.8125rem', padding: '0.4rem 0.75rem' }}
+                      onClick={() => setShowSnapshotModal(acct.id)}
+                    >
+                      <Plus size={14} /> Saldo
+                    </button>
+                    <button
+                      className="btn-ghost"
+                      style={{ fontSize: '0.8125rem', padding: '0.4rem 0.75rem' }}
+                      onClick={() => setExpandedAccount(isExpanded ? null : acct.id)}
+                    >
+                      {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                      Detalhes
+                    </button>
+                  </div>
                   <button
                     className="btn-danger"
                     onClick={() => handleDeleteAccountType(acct.id, acct.name)}
-                    style={{ marginLeft: 'auto' }}
+                    title="Excluir Conta"
+                    style={{ flexShrink: 0 }}
                   >
                     <Trash2 size={14} />
                   </button>
@@ -357,6 +388,7 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
                                 <th>Tipo</th>
                                 <th>Descrição</th>
                                 <th>Valor</th>
+                                <th style={{ width: 80 }}></th>
                               </tr>
                             </thead>
                             <tbody>
@@ -377,6 +409,16 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
                                   <td>{tx.description || '—'}</td>
                                   <td style={{ fontWeight: 700, color: tx.type === 'income' ? 'var(--success-400)' : 'var(--text-primary)' }}>
                                     {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
+                                  </td>
+                                  <td>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                      <button className="btn-secondary" style={{ padding: '0.25rem 0.5rem', minHeight: 0 }} onClick={() => setShowEditTxModal(tx)} title="Editar">
+                                        <Edit2 size={13} />
+                                      </button>
+                                      <button className="btn-danger" style={{ padding: '0.25rem 0.5rem', minHeight: 0 }} onClick={() => handleDeleteTx(tx.id)} title="Excluir">
+                                        <Trash2 size={13} />
+                                      </button>
+                                    </div>
                                   </td>
                                 </tr>
                               ))}
@@ -495,7 +537,7 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
               </div>
               <div>
                 <label className="label" htmlFor="snap-date">Data</label>
-                <input id="snap-date" name="snapshot_date" type="date" defaultValue={today} required className="input" />
+                <input id="snap-date" name="snapshot_date" type="date" defaultValue={today} max={today} required className="input" />
               </div>
               <div>
                 <label className="label" htmlFor="snap-notes">Observações (opcional)</label>
@@ -534,7 +576,7 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
               </div>
               <div>
                 <label className="label">Data</label>
-                <input name="date" type="date" defaultValue={today} required className="input" />
+                <input name="date" type="date" defaultValue={today} max={today} required className="input" />
               </div>
               <div>
                 <label className="label">Descrição</label>
@@ -594,6 +636,45 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
               <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
                 <button type="button" className="btn-ghost" style={{ flex: 1 }} onClick={() => setShowPlanModal(null)}>Cancelar</button>
                 <button type="submit" className="btn-primary" style={{ flex: 1, justifyContent: 'center' }} disabled={isPending}>{isPending ? 'Salvando...' : 'Salvar Previsão'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editar Transação */}
+      {showEditTxModal && (
+        <div className="modal-overlay" onClick={() => setShowEditTxModal(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1.5rem' }}>
+              Editar Transação
+            </h2>
+            <form onSubmit={handleUpdateTx} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div>
+                  <label className="label">Tipo</label>
+                  <select name="type" className="input" required defaultValue={showEditTxModal.type}>
+                    <option value="expense">Despesa (-)</option>
+                    <option value="income">Receita (+)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="label">Valor (R$)</label>
+                  <input name="amount" type="number" step="0.01" min="0.01" required defaultValue={showEditTxModal.amount} className="input" />
+                </div>
+              </div>
+              <div>
+                <label className="label">Data</label>
+                <input name="date" type="date" defaultValue={showEditTxModal.date} max={today} required className="input" />
+              </div>
+              <div>
+                <label className="label">Descrição</label>
+                <input name="description" type="text" defaultValue={showEditTxModal.description ?? ''} className="input" required />
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>* A edição desta transação atualizará o seu saldo retroativamente de forma automática.</p>
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                <button type="button" className="btn-ghost" style={{ flex: 1 }} onClick={() => setShowEditTxModal(null)}>Cancelar</button>
+                <button type="submit" className="btn-primary" style={{ flex: 1, justifyContent: 'center' }} disabled={isPending}>{isPending ? 'Salvando...' : 'Salvar Alterações'}</button>
               </div>
             </form>
           </div>

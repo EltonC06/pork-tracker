@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { logout } from '@/app/actions/auth'
+import GlobalExportBtn from './GlobalExportBtn'
 import {
   TrendingUp,
   LayoutDashboard,
@@ -108,6 +109,9 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         flexDirection: 'column',
         gap: '0.5rem',
       }}>
+        
+        <GlobalExportBtn />
+
         <form action={logout}>
           <button
             type="submit"
@@ -134,7 +138,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               borderRadius: '4px',
               border: '1px solid var(--bg-border)'
             }}>
-              v1.1
+              v1.2
             </span>
             
             {showVersion && (
@@ -147,26 +151,26 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 borderRadius: '8px',
                 padding: '0.75rem',
                 width: 'max-content',
-                maxWidth: '220px',
+                maxWidth: '260px',
                 boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
                 zIndex: 50,
                 pointerEvents: 'none',
               }}>
                 <h4 style={{ fontSize: '0.75rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 600 }}>
-                  v1.1 (Atual)
+                  v1.2 (Atual)
                 </h4>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.6875rem', color: 'var(--text-secondary)' }}>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Rebranding para Pork Tracker.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Novo Módulo: Planejamento Anual & Fluxo de Caixa.
                   </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Módulo de controle de Contas.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Inclusão de Gastos e Ganhos pontuais.
                   </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Dashboards de Ações.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Robô de Lazy Execution para contas recorrentes.
                   </li>
                   <li style={{ marginBottom: 0, position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Autenticação via Supabase.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Responsividade e refinamento de UI.
                   </li>
                 </ul>
               </div>
