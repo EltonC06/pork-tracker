@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { logout } from '@/app/actions/auth'
@@ -21,6 +22,7 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const [showVersion, setShowVersion] = useState(false)
 
   return (
     <aside className="sidebar">
@@ -98,7 +100,11 @@ export default function Sidebar() {
         </form>
 
         <div style={{ padding: '0 0.5rem', marginTop: '0.5rem' }}>
-          <div className="version-wrapper">
+          <div 
+            style={{ position: 'relative', display: 'inline-flex', cursor: 'help', alignItems: 'center' }}
+            onMouseEnter={() => setShowVersion(true)}
+            onMouseLeave={() => setShowVersion(false)}
+          >
             <span style={{ 
               fontSize: '0.6875rem', 
               color: 'var(--text-muted)', 
@@ -110,15 +116,41 @@ export default function Sidebar() {
             }}>
               v1.1
             </span>
-            <div className="version-tooltip">
-              <h4>v1.1 (Atual)</h4>
-              <ul>
-                <li>Rebranding para Pork Tracker.</li>
-                <li>Módulo de controle de Contas.</li>
-                <li>Módulo de Ações e Dashboards.</li>
-                <li>Autenticação segura via Supabase.</li>
-              </ul>
-            </div>
+            
+            {showVersion && (
+              <div style={{
+                position: 'absolute',
+                bottom: 'calc(100% + 8px)',
+                left: 0,
+                background: 'var(--bg-card)',
+                border: '1px solid var(--bg-border)',
+                borderRadius: '8px',
+                padding: '0.75rem',
+                width: 'max-content',
+                maxWidth: '220px',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                zIndex: 50,
+                pointerEvents: 'none',
+              }}>
+                <h4 style={{ fontSize: '0.75rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 600 }}>
+                  v1.1 (Atual)
+                </h4>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.6875rem', color: 'var(--text-secondary)' }}>
+                  <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Rebranding para Pork Tracker.
+                  </li>
+                  <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Módulo de controle de Contas.
+                  </li>
+                  <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Dashboards de Ações.
+                  </li>
+                  <li style={{ marginBottom: 0, position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Autenticação via Supabase.
+                  </li>
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </div>
