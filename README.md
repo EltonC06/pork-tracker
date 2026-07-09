@@ -1,4 +1,4 @@
-# FinTrack 💰
+# Pork Tracker 🐷
 
 Um sistema pessoal completo para planejamento financeiro, focado em alta performance, usabilidade fluida e design moderno. 
 

@@ -42,7 +42,7 @@ export default function RegisterPage() {
             <TrendingUp size={28} color="white" />
           </div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: '800', marginBottom: '0.5rem' }}>
-            Criar conta no <span className="gradient-text">FinTrack</span>
+            Criar conta no <span className="gradient-text">Pork Tracker</span>
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             Comece a acompanhar seu patrimônio hoje

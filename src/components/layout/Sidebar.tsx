@@ -42,7 +42,7 @@ export default function Sidebar() {
           </div>
           <div>
             <div style={{ fontWeight: '800', fontSize: '1.0625rem', lineHeight: 1.2 }}>
-              <span className="gradient-text">Fin</span>Track
+              <span className="gradient-text">Pork</span> Tracker
             </div>
             <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 500 }}>
               Patrimônio Pessoal
@@ -78,10 +78,13 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom: logout */}
+      {/* Bottom: logout & version */}
       <div style={{
         padding: '1rem 0.75rem',
         borderTop: '1px solid var(--bg-border)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.5rem',
       }}>
         <form action={logout}>
           <button
@@ -93,6 +96,31 @@ export default function Sidebar() {
             Sair
           </button>
         </form>
+
+        <div style={{ padding: '0 0.5rem', marginTop: '0.5rem' }}>
+          <div className="version-wrapper">
+            <span style={{ 
+              fontSize: '0.6875rem', 
+              color: 'var(--text-muted)', 
+              fontWeight: 600,
+              background: 'var(--bg-card)',
+              padding: '0.125rem 0.375rem',
+              borderRadius: '4px',
+              border: '1px solid var(--bg-border)'
+            }}>
+              v1.1
+            </span>
+            <div className="version-tooltip">
+              <h4>v1.1 (Atual)</h4>
+              <ul>
+                <li>Rebranding para Pork Tracker.</li>
+                <li>Módulo de controle de Contas.</li>
+                <li>Módulo de Ações e Dashboards.</li>
+                <li>Autenticação segura via Supabase.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </aside>
   )

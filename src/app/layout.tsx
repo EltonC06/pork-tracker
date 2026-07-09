@@ -3,7 +3,7 @@ import './globals.css'
 import { Toaster } from 'sonner'
 
 export const metadata: Metadata = {
-  title: 'FinTrack — Planejamento Financeiro Pessoal',
+  title: 'Pork Tracker — Planejamento Financeiro Pessoal',
   description: 'Acompanhe seu patrimônio, investimentos e evolução financeira de forma inteligente.',
 }
 
