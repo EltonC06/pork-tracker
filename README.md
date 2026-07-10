@@ -6,29 +6,47 @@ Um sistema pessoal completo para planejamento financeiro, focado em alta perform
 
 ### 1. Gestão de Contas (Bancos, Cofre, Carteiras)
 - Cadastro flexível de contas com ícones e cores customizáveis.
-- Registro de evolução de saldos (snapshots) por data.
+- **Edição** de nome, ícone e cor de contas existentes.
+- Registro manual de saldos (snapshots) — foto do saldo real da conta.
 - Histórico detalhado por conta e gráficos individuais.
 
-### 2. Gestão de Carteira de Ações
+### 2. Transações (Gastos & Ganhos)
+- Registro de despesas e receitas por conta.
+- **Categorias customizáveis** (texto livre: Alimentação, Transporte, etc.).
+- Edição e exclusão de transações com confirmação visual.
+- Transações são registros de fluxo de caixa — **não alteram o saldo da conta**.
+
+### 3. Gestão de Carteira de Ações
 - Cadastro de ativos de renda variável pelo *Ticker*.
-- Acompanhamento do Total Investido (Preço Médio) vs Valor Atual.
+- **Edição de posições** (quantidade e preço médio) sem precisar deletar.
+- Acompanhamento do Total Investido vs Valor Atual.
 - Cálculo automático de P&L (Lucros/Perdas) em reais e porcentagem.
+- Layout responsivo: tabela no desktop, cards empilhados no mobile.
 
-### 3. Dashboard Interativo
+### 4. Dashboard Interativo
 - Visão unificada do patrimônio total.
-- Gráficos de composição (Donut) e evolução mensal (Área/Linha).
-- Filtros rápidos por período (30 dias, 90 dias, 1 ano, tudo).
+- **Fluxo do mês**: receitas vs despesas realizadas no mês corrente.
+- **Próximas previsões**: alertas de vencimentos com indicadores de urgência.
+- **KPI "Saldo Livre"**: patrimônio menos despesas previstas do mês.
+- Gráficos de evolução mensal (Área/Linha).
 
-### 4. Módulo de Planejamento (Novo)
-- Projeção de fluxo de caixa 12 meses à frente.
+### 5. Resumo Financeiro (ex-Planejamento)
+- Fluxo realizado do mês atual + projeção 12 meses à frente.
 - Regras de Lazy Execution para contas recorrentes (mensal, anual).
 - Previsibilidade inteligente somando ganhos, gastos e saldos atuais.
 
-### 5. Exportação de Relatórios e Backup (Novo)
-- Geração instantânea de planilhas `.xlsx` com múltiplas abas (contas, histórico, transações, carteira de ações).
-- Impressão inteligente em PDF sem quebra de layout, limpo e direto.
+### 6. Gráficos Avançados
+- Composição patrimonial (Donut).
+- Evolução por conta (Multi-line).
+- P&L por ação (Bar chart horizontal).
+- Filtros rápidos por período (30 dias, 90 dias, 1 ano, tudo).
+- **Layout responsivo** com grid adaptativo.
 
-### 6. Autenticação Segura
+### 7. Exportação de Relatórios e Backup
+- Geração instantânea de planilhas `.xlsx` com múltiplas abas.
+- Impressão inteligente em PDF sem quebra de layout.
+
+### 8. Autenticação Segura
 - Sistema de Login e Cadastro robusto integrado via Supabase Auth.
 - Rotas protegidas via Next.js Proxy/Middleware.
 
@@ -36,14 +54,14 @@ Um sistema pessoal completo para planejamento financeiro, focado em alta perform
 
 ## 🛠 Tecnologias e Stack
 
-O projeto utiliza o que há de mais moderno no ecossistema web:
-
-- **Framework:** [Next.js 16](https://nextjs.org/) (App Router + Server Actions)
-- **Linguagem:** [TypeScript](https://www.typescriptlang.org/)
-- **Backend & Auth:** [Supabase](https://supabase.com/) (PostgreSQL + RLS)
-- **Gráficos:** [Recharts](https://recharts.org/)
-- **Ícones:** [Lucide React](https://lucide.dev/)
-- **Estilização:** CSS Custom Properties focado em UI limpa, Dark Mode nativo e alta flexibilidade (sem dependência pesada de utilitários css não-semânticos).
+| Camada | Tecnologia | Versão |
+|---|---|---|
+| Framework | Next.js (App Router) | 16.x |
+| Linguagem | TypeScript | 5.x |
+| Backend & Auth | Supabase | 2.x |
+| Gráficos | Recharts | 3.x |
+| Ícones | Lucide React | 1.x |
+| Estilização | CSS Custom Properties (Dark Mode nativo) | — |
 
 ---
 
@@ -52,18 +70,47 @@ O projeto utiliza o que há de mais moderno no ecossistema web:
 ```text
 src/
 ├── app/
-│   ├── (auth)               # Rotas públicas: /login, /register, /auth/callback
-│   ├── dashboard/           # Rotas protegidas (Módulos da aplicação)
-│   ├── actions/             # Server Actions (Mutações no banco via servidor)
-│   └── globals.css          # Design System e variáveis CSS
+│   ├── actions/               # Server Actions (mutações no banco)
+│   │   ├── auth.ts
+│   │   ├── accounts.ts
+│   │   ├── stocks.ts
+│   │   ├── transactions.ts
+│   │   ├── planning.ts
+│   │   └── export.ts
+│   ├── dashboard/             # Rotas protegidas
+│   │   ├── page.tsx           # Dashboard principal
+│   │   ├── accounts/          # Módulo de Contas
+│   │   │   ├── page.tsx
+│   │   │   ├── AccountsClient.tsx
+│   │   │   └── components/    # Componentes extraídos
+│   │   │       ├── AccountCard.tsx
+│   │   │       ├── SnapshotForm.tsx
+│   │   │       ├── TransactionForm.tsx
+│   │   │       └── AccountEditForm.tsx
+│   │   ├── stocks/            # Módulo de Ações
+│   │   │   ├── page.tsx
+│   │   │   ├── StocksClient.tsx
+│   │   │   └── components/
+│   │   │       └── StockEditModal.tsx
+│   │   ├── planning/          # Resumo Financeiro
+│   │   └── charts/            # Gráficos Avançados
+│   └── globals.css            # Design System completo
 ├── components/
-│   └── charts/              # Componentes de gráficos reutilizáveis do Recharts
+│   ├── charts/                # Componentes de gráficos (Recharts)
+│   ├── layout/
+│   │   └── Sidebar.tsx
+│   └── ui/                    # Componentes reutilizáveis
+│       ├── ConfirmDialog.tsx
+│       ├── EmptyState.tsx
+│       ├── FormModal.tsx
+│       ├── KpiCard.tsx
+│       ├── TabBar.tsx
+│       └── UpcomingPlans.tsx
 ├── lib/
-│   ├── supabase/            # Configuração do Client e Server do Supabase
-│   └── utils.ts             # Funções utilitárias (formatações de moeda, datas)
-├── proxy.ts                 # Middleware do Next.js (proteção de rotas na Edge)
-└── types/
-    └── database.ts          # Tipagem TypeScript do schema SQL
+│   └── supabase/
+├── types/
+│   └── database.ts
+└── proxy.ts
 ```
 
 ---
@@ -84,11 +131,11 @@ npm install
 ### 3. Configure o Supabase (Banco de Dados)
 1. Crie um projeto no Supabase.
 2. Acesse o **SQL Editor** no painel do Supabase.
-3. Copie o conteúdo do arquivo `supabase/migration.sql` (que fica na raiz deste projeto) e rode lá. Isso vai criar as tabelas e habilitar o RLS de segurança.
-4. Desative a confirmação obrigatória de e-mail (Authentication > Providers > Email > "Confirm email" OFF), se quiser testar de forma mais fácil.
+3. Execute o conteúdo de `supabase/migration_v3.sql` — isso cria todas as tabelas, RLS e índices.
+4. Desative a confirmação obrigatória de e-mail se quiser testar facilmente.
 
 ### 4. Variáveis de Ambiente
-Crie um arquivo `.env.local` na raiz do projeto contendo as chaves do seu Supabase (elas ficam em *Project Settings -> API* no painel do Supabase):
+Crie um arquivo `.env.local` na raiz:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://SUA_URL_AQUI.supabase.co
@@ -101,13 +148,23 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 npm run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000) no seu navegador. Crie uma conta no app e comece a testar!
+Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
 
 ---
 
-## 🎨 Padrões e Boas Práticas Adotados
+## 📐 Regras de Negócio Chave
 
-1. **Server Actions vs API Routes:** A mutação de dados é toda feita usando as modernas Server Actions do Next.js 16 (dentro da pasta `src/app/actions`), evitando endpoints de API redundantes.
-2. **Row Level Security (RLS):** Toda query para o banco de dados Supabase é protegida a nível de linha. Um usuário nunca tem como acessar a conta bancária ou ação do outro.
-3. **Padrão Client/Server Components:** A maioria das páginas (como `dashboard/page.tsx`) usa Server Components para fazer fetch seguro de dados na primeira requisição, passando os resultados prontos para Client Components (como `DashboardClient.tsx` ou gráficos interativos).
-4. **Isolamento do CSS:** O uso de CSS baseado em Variáveis e escopo encapsulado previne classes gigantes, tornando o arquivo `globals.css` um verdadeiro Design System unificado.
+1. **Snapshots ≠ Transações**: Snapshots são fotos do saldo real (manual). Transações são registros de fluxo. Transações **não** criam snapshots automaticamente.
+2. **Categorias livres**: Cada transação pode ter uma categoria de texto livre definida pelo usuário.
+3. **Row Level Security (RLS)**: Toda query é protegida a nível de linha no Supabase.
+4. **Server Actions**: Toda mutação passa por Server Actions do Next.js 16.
+5. **Componentes reutilizáveis**: ConfirmDialog, EmptyState, FormModal, TabBar — eliminam duplicação.
+
+---
+
+## 🎨 Padrões Adotados
+
+1. **Server Actions** para todas as mutações (pasta `src/app/actions/`).
+2. **Padrão Client/Server Components**: Server busca dados, Client renderiza UI interativa.
+3. **CSS Custom Properties** como Design System centralizado em `globals.css`.
+4. **Semantic Commits**: `feat:`, `fix:`, `refactor:`, `docs:`, `style:`, `build:`.

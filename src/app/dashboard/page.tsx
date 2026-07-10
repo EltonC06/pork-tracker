@@ -1,46 +1,48 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatCurrency, formatPercent } from '@/lib/utils'
-import { Wallet, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
+import { Wallet, TrendingUp, DollarSign, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import PatrimonyChart from '@/components/charts/PatrimonyChart'
 import KpiCard from '@/components/ui/KpiCard'
+import UpcomingPlans from '@/components/ui/UpcomingPlans'
+import type { RecurringPlan } from '@/types/database'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Latest balance per account
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
-  const { data: rawAccountTypes } = await db
-    .from('account_types')
-    .select('id, name, icon, color')
-    .eq('user_id', user!.id)
-  const accountTypes = (rawAccountTypes ?? []) as { id: string; name: string; icon: string | null; color: string | null }[]
 
+  // Fetch all data in parallel (eliminates N+1)
+  const [
+    { data: rawAccountTypes },
+    { data: rawSnapshots },
+    { data: rawStocks },
+    { data: rawPlans },
+    { data: rawMonthTxs },
+  ] = await Promise.all([
+    db.from('account_types').select('id, name, icon, color').eq('user_id', user!.id),
+    db.from('account_snapshots').select('balance, snapshot_date, account_type_id').eq('user_id', user!.id).order('snapshot_date', { ascending: true }),
+    db.from('stock_positions').select('quantity, avg_price, current_price').eq('user_id', user!.id),
+    db.from('recurring_plans').select('*').eq('user_id', user!.id).order('target_date', { ascending: true }),
+    db.from('transactions').select('amount, type').eq('user_id', user!.id).gte('date', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]),
+  ])
+
+  const accountTypes = (rawAccountTypes ?? []) as { id: string; name: string; icon: string | null; color: string | null }[]
+  const snapshots = (rawSnapshots ?? []) as { balance: number; snapshot_date: string; account_type_id: string }[]
+  const stocks = (rawStocks ?? []) as { quantity: number; avg_price: number; current_price: number | null }[]
+  const plans = (rawPlans ?? []) as RecurringPlan[]
+  const monthTxs = (rawMonthTxs ?? []) as { amount: number; type: string }[]
+
+  // Compute latest balance per account from snapshots (no loop queries)
   const accountBalances: Record<string, number> = {}
-  if (accountTypes.length > 0) {
-    for (const acct of accountTypes) {
-      const { data } = await db
-        .from('account_snapshots')
-        .select('balance, snapshot_date')
-        .eq('user_id', user!.id)
-        .eq('account_type_id', acct.id)
-        .order('snapshot_date', { ascending: false })
-        .limit(1)
-        .single()
-      const snap = data as { balance: number; snapshot_date: string } | null
-      accountBalances[acct.id] = snap?.balance ?? 0
-    }
+  for (const snap of snapshots) {
+    // Since snapshots are ordered ASC, last one per account wins
+    accountBalances[snap.account_type_id] = snap.balance
   }
 
   // Stock portfolio value
-  const { data: rawStocks } = await db
-    .from('stock_positions')
-    .select('quantity, avg_price, current_price')
-    .eq('user_id', user!.id)
-  const stocks = (rawStocks ?? []) as { quantity: number; avg_price: number; current_price: number | null }[]
-
-  const stockValue = stocks.reduce((sum: number, s: { quantity: number; avg_price: number; current_price: number | null }) => {
+  const stockValue = stocks.reduce((sum, s) => {
     const price = s.current_price ?? s.avg_price
     return sum + s.quantity * price
   }, 0)
@@ -48,18 +50,26 @@ export default async function DashboardPage() {
   const totalAccountBalance = Object.values(accountBalances).reduce((a, b) => a + b, 0)
   const totalPatrimony = totalAccountBalance + stockValue
 
-  // Build monthly evolution for chart
-  const { data: rawSnapshots } = await db
-    .from('account_snapshots')
-    .select('balance, snapshot_date, account_type_id')
-    .eq('user_id', user!.id)
-    .order('snapshot_date', { ascending: true })
-  const snapshots = (rawSnapshots ?? []) as { balance: number; snapshot_date: string; account_type_id: string }[]
+  // Monthly flow
+  const monthIncome = monthTxs.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0)
+  const monthExpense = monthTxs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0)
+  const monthNet = monthIncome - monthExpense
 
-  // Group snapshots by month: latest balance per account per month
+  // Upcoming expenses for "Saldo Livre"
+  const upcomingExpenses = plans
+    .filter(p => p.type === 'expense' && p.target_date)
+    .filter(p => {
+      const targetMonth = new Date(p.target_date + 'T12:00:00').getMonth()
+      const currentMonth = new Date().getMonth()
+      return targetMonth === currentMonth || p.frequency === 'monthly'
+    })
+    .reduce((s, p) => s + p.amount, 0)
+  const saldoLivre = totalAccountBalance - upcomingExpenses
+
+  // Build monthly evolution for chart
   const monthlyData: Record<string, Record<string, number>> = {}
   for (const snap of snapshots) {
-    const month = snap.snapshot_date.substring(0, 7) // YYYY-MM
+    const month = snap.snapshot_date.substring(0, 7)
     if (!monthlyData[month]) monthlyData[month] = {}
     monthlyData[month][snap.account_type_id] = snap.balance
   }
@@ -87,7 +97,7 @@ export default async function DashboardPage() {
       {/* KPI Cards */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: '1rem',
         marginBottom: '2rem',
       }}>
@@ -116,11 +126,11 @@ export default async function DashboardPage() {
           sub={{ value: `${stocks?.length ?? 0} ativos`, positive: true, label: 'posições abertas' }}
         />
         <KpiCard
-          label="Contas Cadastradas"
-          value={String(accountTypes?.length ?? 0)}
+          label="Saldo Livre"
+          value={formatCurrency(saldoLivre)}
           icon={<Wallet size={20} />}
-          accent="neutral"
-          sub={{ value: 'contas', positive: true, label: 'monitoradas' }}
+          accent={saldoLivre >= 0 ? 'success' : 'danger'}
+          sub={{ value: `${formatCurrency(upcomingExpenses)} previsto`, positive: false, label: 'em despesas' }}
         />
       </div>
 
@@ -128,7 +138,7 @@ export default async function DashboardPage() {
         {/* Patrimony Chart */}
         <div className="glass-card lg:col-span-2" style={{ padding: '1.5rem' }}>
           <div style={{ marginBottom: '1.25rem' }}>
-            <h2 style={{ fontSize: '1.0625rem', fontWeight: '700' }}>Evolução do Patrimônio (Contas)</h2>
+            <h2 style={{ fontSize: '1.0625rem', fontWeight: '700' }}>Evolução do Patrimônio</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>Soma de todos os saldos registrados por mês</p>
           </div>
           {chartData.length > 0 ? (
@@ -144,46 +154,80 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        {/* Account balances summary */}
-        {accountTypes && accountTypes.length > 0 && (
-          <div className="glass-card lg:col-span-1" style={{ padding: '1.5rem', height: 'fit-content' }}>
-            <h2 style={{ fontSize: '1.0625rem', fontWeight: '700', marginBottom: '1rem' }}>Saldo Atual por Conta</h2>
+        {/* Right Column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+          {/* Monthly Flow */}
+          <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.0625rem', fontWeight: '700', marginBottom: '1rem' }}>Fluxo do Mês</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {accountTypes.map(acct => {
-                const balance = accountBalances[acct.id] ?? 0
-                const pct = totalAccountBalance > 0 ? (balance / totalAccountBalance) * 100 : 0
-                return (
-                  <div key={acct.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <span style={{ fontSize: '1.25rem', minWidth: '1.5rem' }}>{acct.icon ?? '💰'}</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                        <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{acct.name}</span>
-                        <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                          {formatCurrency(balance)}
-                        </span>
-                      </div>
-                      <div style={{ height: '4px', background: 'var(--bg-border)', borderRadius: '2px', overflow: 'hidden' }}>
-                        <div style={{
-                          height: '100%',
-                          width: `${pct}%`,
-                          background: acct.color ?? 'var(--brand-500)',
-                          borderRadius: '2px',
-                          transition: 'width 0.5s ease',
-                        }} />
-                      </div>
-                    </div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', minWidth: '3rem', textAlign: 'right' }}>
-                      {pct.toFixed(1)}%
-                    </span>
-                  </div>
-                )
-              })}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                  <ArrowUpRight size={16} color="var(--success-400)" /> Receitas
+                </span>
+                <span style={{ fontWeight: 700, color: 'var(--success-400)' }}>{formatCurrency(monthIncome)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                  <ArrowDownRight size={16} color="var(--danger-400)" /> Despesas
+                </span>
+                <span style={{ fontWeight: 700, color: 'var(--danger-400)' }}>{formatCurrency(monthExpense)}</span>
+              </div>
+              <div style={{ borderTop: '1px solid var(--bg-border)', paddingTop: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>Resultado</span>
+                <span style={{ fontWeight: 800, fontSize: '1.0625rem', color: monthNet >= 0 ? 'var(--success-400)' : 'var(--danger-400)' }}>
+                  {monthNet >= 0 ? '+' : ''}{formatCurrency(monthNet)}
+                </span>
+              </div>
             </div>
           </div>
-        )}
+
+          {/* Upcoming Plans */}
+          <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.0625rem', fontWeight: '700', marginBottom: '1rem' }}>Próximas Previsões</h2>
+            <UpcomingPlans plans={plans} limit={4} />
+          </div>
+
+          {/* Account balances summary */}
+          {accountTypes && accountTypes.length > 0 && (
+            <div className="glass-card" style={{ padding: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.0625rem', fontWeight: '700', marginBottom: '1rem' }}>Saldo por Conta</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {accountTypes.map(acct => {
+                  const balance = accountBalances[acct.id] ?? 0
+                  const pct = totalAccountBalance > 0 ? (balance / totalAccountBalance) * 100 : 0
+                  return (
+                    <div key={acct.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{ fontSize: '1.25rem', minWidth: '1.5rem' }}>{acct.icon ?? '💰'}</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                          <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{acct.name}</span>
+                          <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                            {formatCurrency(balance)}
+                          </span>
+                        </div>
+                        <div style={{ height: '4px', background: 'var(--bg-border)', borderRadius: '2px', overflow: 'hidden' }}>
+                          <div style={{
+                            height: '100%',
+                            width: `${pct}%`,
+                            background: acct.color ?? 'var(--brand-500)',
+                            borderRadius: '2px',
+                            transition: 'width 0.5s ease',
+                          }} />
+                        </div>
+                      </div>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', minWidth: '3rem', textAlign: 'right' }}>
+                        {pct.toFixed(1)}%
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+        </div>
       </div>
     </div>
   )
 }
-
-

@@ -176,7 +176,7 @@ export default function ChartsClient({ accountTypes, snapshots, stocks, priceHis
         </div>
 
         {/* 2. Pie + 3. Multi-line grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '1.25rem' }}>
+        <div className="grid-auto-fit">
 
           {/* Pie: Allocation */}
           <div className="glass-card" style={{ padding: '1.5rem' }}>

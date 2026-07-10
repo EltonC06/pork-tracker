@@ -20,7 +20,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/dashboard/accounts', label: 'Contas', icon: Wallet },
   { href: '/dashboard/stocks', label: 'Ações', icon: TrendingUp },
-  { href: '/dashboard/planning', label: 'Planejamento', icon: Calendar },
+  { href: '/dashboard/planning', label: 'Resumo', icon: Calendar },
   { href: '/dashboard/charts', label: 'Gráficos', icon: BarChart3 },
 ]
 
@@ -138,7 +138,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               borderRadius: '4px',
               border: '1px solid var(--bg-border)'
             }}>
-              v1.2
+              v2.0
             </span>
             
             {showVersion && (
@@ -157,20 +157,23 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 pointerEvents: 'none',
               }}>
                 <h4 style={{ fontSize: '0.75rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 600 }}>
-                  v1.2 (Atual)
+                  v2.0 (Atual)
                 </h4>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.6875rem', color: 'var(--text-secondary)' }}>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Novo Módulo: Planejamento Anual & Fluxo de Caixa.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Refatoração: componentes reutilizáveis e modais extraídos.
                   </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Inclusão de Gastos e Ganhos pontuais.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Nova regra de saldo: snapshots manuais independentes.
                   </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Robô de Lazy Execution para contas recorrentes.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Categorias livres em transações, edição de contas e ações.
+                  </li>
+                  <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Dashboard: fluxo mensal, previsões e Saldo Livre.
                   </li>
                   <li style={{ marginBottom: 0, position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Responsividade e refinamento de UI.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Resumo Financeiro: real + projeção combinados.
                   </li>
                 </ul>
               </div>

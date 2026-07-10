@@ -466,6 +466,93 @@ body {
   color: var(--brand-400);
 }
 
+/* Confirm Dialog */
+.confirm-dialog {
+  background: var(--bg-card);
+  border: 1px solid var(--bg-border);
+  border-radius: 20px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  animation: scaleIn 0.2s ease;
+  box-shadow: 0 25px 80px rgba(0,0,0,0.5);
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Tab Bar */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--bg-border);
+  margin-bottom: 1.5rem;
+}
+
+.tab-bar-item {
+  background: none;
+  border: none;
+  padding: 0 0 0.625rem 0;
+  margin-right: 1.25rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.tab-bar-item:hover {
+  color: var(--text-primary);
+}
+
+.tab-bar-item.active {
+  color: var(--brand-400);
+  font-weight: 700;
+  border-bottom-color: var(--brand-500);
+}
+
+/* Responsive grid helpers */
+.grid-auto-fit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .grid-auto-fit {
+    grid-template-columns: 1fr;
+  }
+  
+  .confirm-dialog {
+    max-width: calc(100vw - 2rem);
+    padding: 1.5rem;
+  }
+}
+
+/* Stock table responsiveness */
+.stock-cards-mobile {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .stock-table-desktop {
+    display: none;
+  }
+  .stock-cards-mobile {
+    display: flex;
+  }
+}
+
 /* --- Print Styles (for PDF Export) --- */
 @media print {
   /* Force light theme for printing to save ink and ensure legibility */

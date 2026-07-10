@@ -76,11 +76,13 @@ Estas classes CSS já estão definidas. **Use-as antes de criar novos estilos:**
 | `.label` | Label de formulário |
 | `.data-table` | Tabelas de dados |
 | `.badge`, `.badge-success`, `.badge-danger`, `.badge-neutral` | Tags/rótulos |
-| `.modal-overlay` + `.modal-content` | Modais |
+| `.modal-overlay` + `.modal-content` | Modais (usado internamente no `FormModal`) |
 | `.skeleton` | Loading state de conteúdo |
 | `.gradient-text` | Texto com gradiente da marca |
 | `.empty-state` | Estado vazio de listas/módulos |
 | `.nav-item` | Itens de navegação na sidebar |
+| `.confirm-dialog` | Usado pelo componente `ConfirmDialog` |
+| `.tab-bar`, `.tab-bar-item` | Navegação interna em cards (`TabBar`) |
 
 ### 3.3 Tipografia
 
@@ -121,8 +123,15 @@ src/
 │   ├── charts/            ← Componentes de gráficos reutilizáveis (Recharts)
 │   │   ├── PatrimonyChart.tsx
 │   │   └── AccountLineChart.tsx
-│   └── layout/
-│       └── Sidebar.tsx    ← Navegação lateral (client component)
+│   ├── layout/
+│   │   └── Sidebar.tsx    ← Navegação lateral (client component)
+│   └── ui/                ← Componentes base reutilizáveis
+│       ├── ConfirmDialog.tsx
+│       ├── EmptyState.tsx
+│       ├── FormModal.tsx
+│       ├── KpiCard.tsx
+│       ├── TabBar.tsx
+│       └── UpcomingPlans.tsx
 │
 ├── lib/
 │   └── supabase/

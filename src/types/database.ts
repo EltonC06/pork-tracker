@@ -129,6 +129,7 @@ export interface Database {
           account_type_id: string | null
           amount: number
           type: 'income' | 'expense'
+          category: string | null
           date: string
           description: string | null
           created_at: string
@@ -139,6 +140,7 @@ export interface Database {
           account_type_id?: string | null
           amount: number
           type: 'income' | 'expense'
+          category?: string | null
           date?: string
           description?: string | null
           created_at?: string
@@ -149,6 +151,7 @@ export interface Database {
           account_type_id?: string | null
           amount?: number
           type?: 'income' | 'expense'
+          category?: string | null
           date?: string
           description?: string | null
           created_at?: string
