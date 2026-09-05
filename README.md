@@ -152,7 +152,9 @@ npm install
 1. Crie um projeto no Supabase.
 2. Acesse o **SQL Editor** no painel do Supabase.
 3. Execute o conteúdo de `supabase/migration_v3.sql` — isso cria todas as tabelas, RLS e índices.
-4. Desative a confirmação obrigatória de e-mail se quiser testar facilmente.
+4. Mantenha a confirmação de e-mail habilitada em produção. Para testes locais, ela pode ser desativada temporariamente.
+5. Em **Authentication > URL Configuration**, configure a `Site URL` e autorize somente as URLs necessárias, como `http://localhost:3000/auth/callback` durante o desenvolvimento.
+6. Em **Authentication > Password**, configure a política mínima de senha e habilite a proteção contra senhas vazadas quando disponível.
 
 ### 4. Variáveis de Ambiente
 Crie um arquivo `.env.local` na raiz:
@@ -162,6 +164,8 @@ NEXT_PUBLIC_SUPABASE_URL=https://SUA_URL_AQUI.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA_CHAVE_PUBLISHABLE_OU_ANON_AQUI
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
+
+O fluxo de autenticação inclui a rota protegida `/dashboard/settings` para alteração de senha com confirmação da senha atual, além de `/forgot-password` e `/reset-password` para recuperação por e-mail. O link de recuperação usa `/auth/callback?next=/reset-password`; o callback aceita somente esse destino interno.
 
 ### 5. Inicie a aplicação
 ```bash

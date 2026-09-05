@@ -16,7 +16,8 @@ export default function RegisterPage() {
     const formData = new FormData(e.currentTarget)
     startTransition(async () => {
       const result = await register(formData)
-      if (result && 'error' in result) setError(result.error)
+      if (result?.error) setError(result.error)
+      if (result?.success) setSuccess(result.success)
     })
   }
 

@@ -119,6 +119,12 @@ export default function LoginPage() {
 
           <div className="divider" />
 
+          <p style={{ textAlign: 'center', fontSize: '0.875rem', marginBottom: '1rem' }}>
+            <Link href="/forgot-password" style={{ color: 'var(--brand-400)', textDecoration: 'none', fontWeight: 600 }}>
+              Esqueci minha senha
+            </Link>
+          </p>
+
           <p style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
             Não tem conta?{' '}
             <Link href="/register" style={{ color: 'var(--brand-400)', textDecoration: 'none', fontWeight: 600 }}>
