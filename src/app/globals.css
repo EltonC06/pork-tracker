@@ -736,11 +736,56 @@ body {
   .tx-table-desktop {
     display: none !important;
   }
-  .tx-cards-mobile {
-    display: flex !important;
-  }
 }
 
+/* --- OFX Import Modal & Dropzone --- */
+.ofx-dropzone {
+  border: 2px dashed var(--bg-border);
+  border-radius: 16px;
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: var(--bg-surface);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+.ofx-dropzone:hover, .ofx-dropzone.dragover {
+  border-color: var(--brand-500);
+  background: rgba(99, 102, 241, 0.06);
+  box-shadow: var(--glow-brand);
+}
+
+.badge-duplicate {
+  background: rgba(251, 191, 36, 0.12);
+  color: var(--warning-400);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  font-size: 0.6875rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 600;
+}
+
+.ofx-table-container {
+  max-height: 380px;
+  overflow-y: auto;
+  border: 1px solid var(--bg-border);
+  border-radius: 12px;
+  background: var(--bg-surface);
+}
+
+.ofx-summary-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: 12px;
+  padding: 0.875rem 1rem;
+}
 
 /* --- Print Styles (for PDF Export) --- */
 @media print {

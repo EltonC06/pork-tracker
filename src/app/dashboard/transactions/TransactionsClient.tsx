@@ -16,6 +16,7 @@ import {
   Tag,
   ArrowUpDown,
   Check,
+  Upload,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { updateTransaction, deleteTransaction } from '@/app/actions/transactions'
@@ -23,6 +24,7 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import KpiCard from '@/components/ui/KpiCard'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import FormModal from '@/components/ui/FormModal'
+import OfxImportModal from '@/components/ui/OfxImportModal'
 import EmptyState from '@/components/ui/EmptyState'
 import type { Transaction, AccountType } from '@/types/database'
 
@@ -61,6 +63,7 @@ export default function TransactionsClient({
   // Edit / Delete Dialog states
   const [editingTx, setEditingTx] = useState<Transaction | null>(null)
   const [deletingTxId, setDeletingTxId] = useState<string | null>(null)
+  const [isOfxModalOpen, setIsOfxModalOpen] = useState(false)
 
   // Fast account lookup map
   const accountsMap = useMemo(() => {
@@ -400,21 +403,34 @@ export default function TransactionsClient({
           </p>
         </div>
 
-        {/* Header Action */}
-        <button
-          type="button"
-          className="btn-primary"
-          onClick={() => {
-            // Trigger keyboard shortcut event to open QuickAddFab modal
-            window.dispatchEvent(
-              new KeyboardEvent('keydown', { key: 'n', ctrlKey: true, bubbles: true })
-            )
-          }}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          <Plus size={18} />
-          <span>Novo Lançamento</span>
-        </button>
+        {/* Header Actions */}
+        <div style={{ display: 'flex', gap: '0.625rem', alignItems: 'center' }}>
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => setIsOfxModalOpen(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            title="Importar extrato bancário em formato .ofx"
+          >
+            <Upload size={16} />
+            <span>Importar OFX</span>
+          </button>
+
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => {
+              // Trigger keyboard shortcut event to open QuickAddFab modal
+              window.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'n', ctrlKey: true, bubbles: true })
+              )
+            }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            <Plus size={18} />
+            <span>Novo Lançamento</span>
+          </button>
+        </div>
       </div>
 
       {/* Summary KPI Cards */}
@@ -1128,6 +1144,14 @@ export default function TransactionsClient({
         variant="danger"
         onConfirm={confirmDelete}
         onCancel={() => setDeletingTxId(null)}
+      />
+
+      {/* OFX Import Modal */}
+      <OfxImportModal
+        isOpen={isOfxModalOpen}
+        onClose={() => setIsOfxModalOpen(false)}
+        accounts={accounts}
+        existingTransactions={initialTransactions}
       />
     </div>
   )

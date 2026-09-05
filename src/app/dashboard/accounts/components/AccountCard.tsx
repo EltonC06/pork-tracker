@@ -2,7 +2,7 @@
 
 import { useState, useTransition, type ReactNode } from 'react'
 import { toast } from 'sonner'
-import { ChevronDown, ChevronUp, Plus, Edit2, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, Plus, Edit2, Trash2, Upload } from 'lucide-react'
 import { deleteAccountType } from '@/app/actions/accounts'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { AccountType, AccountSnapshot, Transaction, RecurringPlan } from '@/types/database'
@@ -16,6 +16,7 @@ interface AccountCardProps {
   onAddTransaction: () => void
   onAddSnapshot: () => void
   onEditAccount: () => void
+  onImportOfx?: () => void
   children?: ReactNode
 }
 
@@ -27,6 +28,7 @@ export default function AccountCard({
   onAddTransaction,
   onAddSnapshot,
   onEditAccount,
+  onImportOfx,
   children,
 }: AccountCardProps) {
   const [isPending, startTransition] = useTransition()
@@ -102,6 +104,16 @@ export default function AccountCard({
               {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               Detalhes
             </button>
+            {onImportOfx && (
+              <button
+                className="btn-ghost"
+                style={{ fontSize: '0.8125rem', padding: '0.4rem 0.75rem' }}
+                onClick={onImportOfx}
+                title="Importar extrato bancário .ofx para esta conta"
+              >
+                <Upload size={14} /> OFX
+              </button>
+            )}
           </div>
           <div style={{ display: 'flex', gap: '0.375rem', flexShrink: 0 }}>
             <button

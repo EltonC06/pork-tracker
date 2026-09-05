@@ -140,7 +140,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               borderRadius: '4px',
               border: '1px solid var(--bg-border)'
             }}>
-              v2.1
+              v2.2
             </span>
             
             {showVersion && (
@@ -159,20 +159,20 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 pointerEvents: 'none',
               }}>
                 <h4 style={{ fontSize: '0.75rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 600 }}>
-                  v2.1 (Atual)
+                  v2.2 (Atual)
                 </h4>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.6875rem', color: 'var(--text-secondary)' }}>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Quick Add FAB: botão flutuante global com atalhos de teclado (Ctrl+N, Ctrl+Enter).
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Importador de Extrato OFX: leitura e upload de arquivos bancários em lote.
                   </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Extrato Global: visão unificada de lançamentos com filtros e busca rápida.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Identificação inteligente de banco e prevenção de lançamentos duplicados.
                   </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Agrupamento flexível: visão por Dia, Semana e Mês com subtotais.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Motor de sugestão automática de categorias por palavras-chave.
                   </li>
                   <li style={{ marginBottom: 0, position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Salvar e Novo: registro contínuo e ágil sem fechar o modal.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Quick Add FAB (Ctrl+N) e Extrato Global unificado (v2.1).
                   </li>
                 </ul>
               </div>

@@ -29,37 +29,44 @@ Um sistema pessoal completo para planejamento financeiro, focado em alta perform
   - **KPIs do Período**: Cards com Total de Entradas, Total de Saídas, Saldo Líquido e Contagem de registros do filtro ativo.
   - **100% Responsivo**: Tabela no desktop e cards modernos em dispositivos móveis (< 768px).
 
-### 4. Gestão de Carteira de Ações
+### 4. Importação de Extrato Bancário OFX (v2.2)
+- **Upload Direto de Arquivo `.ofx`**: Suporte universal ao formato exportado por bancos brasileiros (Inter, Nubank, Itaú, Bradesco, BB, Caixa, Santander, C6, etc.).
+- **Identificação Automática de Banco**: O sistema lê o código FEBRABAN e o nome da instituição no arquivo e pré-seleciona a conta de destino correspondente cadastrada no Pork Tracker.
+- **Detecção Inteligente de Duplicatas**: Lançamentos com mesma data, valor e tipo já existentes na conta são identificados como possíveis duplicatas e desmarcados por padrão, evitando registros repetidos acidentais.
+- **Motor de Sugestão de Categorias**: Classificação automática baseada em palavras-chave da descrição (Alimentação, Transporte, Moradia, Compras, Saúde, Lazer, etc.), com possibilidade de edição direta antes da importação.
+- **Tabela de Pré-visualização e Edição Rápida**: Seleção em massa, edição inline de descrições e categorias, com cálculo em tempo real dos totais de entradas e saídas selecionadas.
+
+### 5. Gestão de Carteira de Ações
 - Cadastro de ativos de renda variável pelo *Ticker*.
 - **Edição de posições** (quantidade e preço médio) sem precisar deletar.
 - Acompanhamento do Total Investido vs Valor Atual.
 - Cálculo automático de P&L (Lucros/Perdas) em reais e porcentagem.
 - Layout responsivo: tabela no desktop, cards empilhados no mobile.
 
-### 4. Dashboard Interativo
+### 6. Dashboard Interativo
 - Visão unificada do patrimônio total.
 - **Fluxo do mês**: receitas vs despesas realizadas no mês corrente.
 - **Próximas previsões**: alertas de vencimentos com indicadores de urgência.
 - **KPI "Saldo Livre"**: patrimônio menos despesas previstas do mês.
 - Gráficos de evolução mensal (Área/Linha).
 
-### 5. Resumo Financeiro (ex-Planejamento)
+### 7. Resumo Financeiro (ex-Planejamento)
 - Fluxo realizado do mês atual + projeção 12 meses à frente.
 - Regras de Lazy Execution para contas recorrentes (mensal, anual).
 - Previsibilidade inteligente somando ganhos, gastos e saldos atuais.
 
-### 6. Gráficos Avançados
+### 8. Gráficos Avançados
 - Composição patrimonial (Donut).
 - Evolução por conta (Multi-line).
 - P&L por ação (Bar chart horizontal).
 - Filtros rápidos por período (30 dias, 90 dias, 1 ano, tudo).
 - **Layout responsivo** com grid adaptativo.
 
-### 7. Exportação de Relatórios e Backup
+### 9. Exportação de Relatórios e Backup
 - Geração instantânea de planilhas `.xlsx` com múltiplas abas.
 - Impressão inteligente em PDF sem quebra de layout.
 
-### 8. Autenticação Segura
+### 10. Autenticação Segura
 - Sistema de Login e Cadastro robusto integrado via Supabase Auth.
 - Rotas protegidas via Next.js Proxy/Middleware.
 

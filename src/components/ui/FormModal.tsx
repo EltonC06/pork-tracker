@@ -7,10 +7,11 @@ interface FormModalProps {
   isOpen: boolean
   onClose: () => void
   title: string
+  maxWidth?: string
   children: ReactNode
 }
 
-export default function FormModal({ isOpen, onClose, title, children }: FormModalProps) {
+export default function FormModal({ isOpen, onClose, title, maxWidth, children }: FormModalProps) {
   // Close on Escape key
   useEffect(() => {
     if (!isOpen) return
@@ -25,7 +26,11 @@ export default function FormModal({ isOpen, onClose, title, children }: FormModa
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
+      <div
+        className="modal-content"
+        style={maxWidth ? { maxWidth } : undefined}
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',

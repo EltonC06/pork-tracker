@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { Plus, Trash2, ArrowUpRight, ArrowDownRight, Edit2, BarChart2, History, Calendar, Clock } from 'lucide-react'
+import { Plus, Trash2, ArrowUpRight, ArrowDownRight, Edit2, BarChart2, History, Calendar, Clock, Upload } from 'lucide-react'
 import { createAccountType, deleteSnapshot } from '@/app/actions/accounts'
 import { deleteTransaction } from '@/app/actions/transactions'
 import { createRecurringPlan, deleteRecurringPlan } from '@/app/actions/planning'
@@ -13,6 +13,7 @@ import TabBar from '@/components/ui/TabBar'
 import EmptyState from '@/components/ui/EmptyState'
 import FormModal from '@/components/ui/FormModal'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import OfxImportModal from '@/components/ui/OfxImportModal'
 import AccountCard from './components/AccountCard'
 import SnapshotForm from './components/SnapshotForm'
 import TransactionForm from './components/TransactionForm'
@@ -51,6 +52,7 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
   const [activeTabs, setActiveTabs] = useState<Record<string, string>>({})
   const [selectedIcon, setSelectedIcon] = useState('💰')
   const [selectedColor, setSelectedColor] = useState('#6366f1')
+  const [showOfxModal, setShowOfxModal] = useState<string | null>(null)
 
   // Delete confirm states
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'snapshot' | 'tx' | 'plan'; id: string; label: string } | null>(null)
@@ -133,9 +135,20 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
             Gerencie seus saldos, transações e previsibilidades
           </p>
         </div>
-        <button className="btn-primary" onClick={() => setShowNewAccountModal(true)}>
-          <Plus size={16} /> Nova Conta
-        </button>
+        <div style={{ display: 'flex', gap: '0.625rem', alignItems: 'center' }}>
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => setShowOfxModal('open')}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            title="Importar extrato bancário em formato .ofx"
+          >
+            <Upload size={16} /> Importar OFX
+          </button>
+          <button className="btn-primary" onClick={() => setShowNewAccountModal(true)}>
+            <Plus size={16} /> Nova Conta
+          </button>
+        </div>
       </div>
 
       {/* Account Cards */}
@@ -168,6 +181,7 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
                 onAddTransaction={() => setShowTxModal(acct.id)}
                 onAddSnapshot={() => setShowSnapshotModal(acct.id)}
                 onEditAccount={() => setShowEditAccount(acct)}
+                onImportOfx={() => setShowOfxModal(acct.id)}
               >
                 {/* Tab Navigation */}
                 <TabBar
@@ -459,6 +473,15 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
         variant="danger"
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteConfirm(null)}
+      />
+
+      {/* OFX Import Modal */}
+      <OfxImportModal
+        isOpen={!!showOfxModal}
+        onClose={() => setShowOfxModal(null)}
+        accounts={accountTypes}
+        existingTransactions={transactions}
+        initialAccountId={showOfxModal === 'open' ? undefined : showOfxModal || undefined}
       />
     </div>
   )
