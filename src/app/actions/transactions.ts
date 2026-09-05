@@ -49,6 +49,9 @@ export async function createTransaction(formData: FormData) {
   if (error) throw new Error('Erro ao salvar transação: ' + error.message)
 
   revalidatePath('/dashboard')
+  revalidatePath('/dashboard/transactions')
+  revalidatePath('/dashboard/accounts')
+  revalidatePath('/dashboard/planning')
   return { success: true }
 }
 
@@ -64,25 +67,33 @@ export async function updateTransaction(id: string, formData: FormData) {
   const parsed = transactionSchema.safeParse(Object.fromEntries(formData.entries()))
   if (!parsed.success) throw new Error('Dados inválidos: ' + parsed.error.message)
 
-  const { amount, type, category, date, description } = parsed.data
+  const { account_type_id, amount, type, category, date, description } = parsed.data
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
 
+  const updateData: Record<string, any> = {
+    amount,
+    type,
+    category: category || null,
+    date: date || new Date().toISOString().split('T')[0],
+    description: description || null,
+  }
+  if (account_type_id !== undefined) {
+    updateData.account_type_id = account_type_id || null
+  }
+
   const { error } = await db
     .from('transactions')
-    .update({
-      amount,
-      type,
-      category: category || null,
-      date: date || new Date().toISOString().split('T')[0],
-      description: description || null,
-    })
+    .update(updateData)
     .eq('id', id)
     .eq('user_id', user.id)
 
   if (error) throw new Error('Erro ao atualizar transação: ' + error.message)
 
   revalidatePath('/dashboard')
+  revalidatePath('/dashboard/transactions')
+  revalidatePath('/dashboard/accounts')
+  revalidatePath('/dashboard/planning')
   return { success: true }
 }
 
@@ -106,4 +117,8 @@ export async function deleteTransaction(id: string) {
   if (error) throw new Error(error.message)
 
   revalidatePath('/dashboard')
+  revalidatePath('/dashboard/transactions')
+  revalidatePath('/dashboard/accounts')
+  revalidatePath('/dashboard/planning')
 }
+

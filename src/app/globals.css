@@ -553,6 +553,195 @@ body {
   }
 }
 
+/* --- Quick Add FAB --- */
+.quick-add-fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.875rem 1.25rem;
+  background: linear-gradient(135deg, var(--brand-500), var(--brand-600));
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  user-select: none;
+}
+.quick-add-fab:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(99, 102, 241, 0.55), 0 4px 10px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, var(--brand-400), var(--brand-500));
+}
+.quick-add-fab:active {
+  transform: scale(0.97);
+}
+
+.fab-shortcut-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+@media (max-width: 768px) {
+  .quick-add-fab {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+  }
+  .fab-shortcut-badge {
+    display: none;
+  }
+}
+
+/* --- Type Segmented Control (Despesa / Receita) --- */
+.type-segmented-control {
+  display: flex;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+}
+.type-segmented-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-muted);
+}
+.type-segmented-btn:hover {
+  color: var(--text-secondary);
+}
+.type-segmented-btn.active-expense {
+  background: rgba(244, 63, 94, 0.12);
+  color: var(--danger-400);
+  border-color: rgba(244, 63, 94, 0.3);
+}
+.type-segmented-btn.active-income {
+  background: rgba(52, 211, 153, 0.12);
+  color: var(--success-400);
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+/* --- Filter Bar & Chips --- */
+.filter-bar {
+  background: var(--bg-card);
+  border: 1px solid var(--bg-border);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+.filter-chip-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.filter-chip {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--bg-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.filter-chip:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  border-color: var(--brand-400);
+}
+.filter-chip.active {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--brand-400);
+  border-color: rgba(99, 102, 241, 0.35);
+  font-weight: 600;
+}
+
+/* --- Transaction Group Header & Table --- */
+.tx-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-left: 3px solid var(--brand-500);
+  border-radius: 10px;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+.tx-group-title {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.tx-group-count {
+  font-size: 0.6875rem;
+  background: var(--bg-card);
+  color: var(--text-muted);
+  border: 1px solid var(--bg-border);
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-weight: 600;
+}
+.tx-group-subtotal {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tx-cards-mobile {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .tx-table-desktop {
+    display: none !important;
+  }
+  .tx-cards-mobile {
+    display: flex !important;
+  }
+}
+
+
 /* --- Print Styles (for PDF Export) --- */
 @media print {
   /* Force light theme for printing to save ink and ensure legibility */
@@ -581,7 +770,7 @@ body {
   }
 
   /* Hide buttons and interactive elements */
-  button, .btn-primary, .btn-secondary, .btn-ghost, .btn-danger {
+  button, .btn-primary, .btn-secondary, .btn-ghost, .btn-danger, .quick-add-fab {
     display: none !important;
   }
   

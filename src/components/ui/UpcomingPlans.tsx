@@ -11,6 +11,7 @@ interface UpcomingPlansProps {
 }
 
 export default function UpcomingPlans({ plans, limit = 3 }: UpcomingPlansProps) {
+  // eslint-disable-next-line react-hooks/purity
   const now = useMemo(() => Date.now(), [])
 
   const upcoming = plans

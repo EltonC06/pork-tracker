@@ -20,9 +20,34 @@ export default async function DashboardLayout({
     console.error('Failed to process pending plans', err)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+
+  const [{ data: accountTypes }, { data: txCategories }] = await Promise.all([
+    db
+      .from('account_types')
+      .select('id, name, icon, color')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: true }),
+    db
+      .from('transactions')
+      .select('category')
+      .eq('user_id', user.id)
+      .not('category', 'is', null)
+      .limit(100),
+  ])
+
+  const distinctCategories = Array.from(
+    new Set((txCategories || []).map((t: { category: string | null }) => t.category).filter(Boolean))
+  ) as string[]
+
   return (
-    <DashboardLayoutClient>
+    <DashboardLayoutClient
+      accounts={accountTypes ?? []}
+      categories={distinctCategories}
+    >
       {children}
     </DashboardLayoutClient>
   )
 }
+

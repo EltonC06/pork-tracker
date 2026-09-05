@@ -14,11 +14,13 @@ import {
   LogOut,
   Home,
   Calendar,
+  Receipt,
 } from 'lucide-react'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/dashboard/accounts', label: 'Contas', icon: Wallet },
+  { href: '/dashboard/transactions', label: 'Extrato', icon: Receipt },
   { href: '/dashboard/stocks', label: 'Ações', icon: TrendingUp },
   { href: '/dashboard/planning', label: 'Resumo', icon: Calendar },
   { href: '/dashboard/charts', label: 'Gráficos', icon: BarChart3 },
@@ -138,7 +140,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               borderRadius: '4px',
               border: '1px solid var(--bg-border)'
             }}>
-              v2.0
+              v2.1
             </span>
             
             {showVersion && (
@@ -151,29 +153,26 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 borderRadius: '8px',
                 padding: '0.75rem',
                 width: 'max-content',
-                maxWidth: '260px',
+                maxWidth: '280px',
                 boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
                 zIndex: 50,
                 pointerEvents: 'none',
               }}>
                 <h4 style={{ fontSize: '0.75rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 600 }}>
-                  v2.0 (Atual)
+                  v2.1 (Atual)
                 </h4>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.6875rem', color: 'var(--text-secondary)' }}>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Refatoração: componentes reutilizáveis e modais extraídos.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Quick Add FAB: botão flutuante global com atalhos de teclado (Ctrl+N, Ctrl+Enter).
                   </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Nova regra de saldo: snapshots manuais independentes.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Extrato Global: visão unificada de lançamentos com filtros e busca rápida.
                   </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Categorias livres em transações, edição de contas e ações.
-                  </li>
-                  <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Dashboard: fluxo mensal, previsões e Saldo Livre.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Agrupamento flexível: visão por Dia, Semana e Mês com subtotais.
                   </li>
                   <li style={{ marginBottom: 0, position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Resumo Financeiro: real + projeção combinados.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Salvar e Novo: registro contínuo e ágil sem fechar o modal.
                   </li>
                 </ul>
               </div>

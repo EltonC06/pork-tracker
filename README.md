@@ -16,7 +16,20 @@ Um sistema pessoal completo para planejamento financeiro, focado em alta perform
 - Edição e exclusão de transações com confirmação visual.
 - Transações são registros de fluxo de caixa — **não alteram o saldo da conta**.
 
-### 3. Gestão de Carteira de Ações
+### 3. Extrato Global & Lançamento Rápido (v2.1)
+- **Quick Add FAB**: Botão flutuante global em todas as telas do dashboard com atalho `Ctrl+N` / `Cmd+N`.
+- **Registro Ultrarrápido**: Modal otimizado com foco automático no valor, alternador intuitivo Despesa/Receita e autocomplete de categorias.
+- **Lançamento Contínuo**: Suporte a atalhos de teclado:
+  - `Ctrl+Enter` para salvar e fechar.
+  - `Ctrl+Shift+Enter` para **Salvar e Novo** (lança e mantém o modal aberto para o próximo registro).
+  - `Esc` para fechar.
+- **Extrato Unificado (`/dashboard/transactions`)**:
+  - Tabela completa de transações com busca por descrição/categoria e filtros avançados (conta, tipo, categoria e período).
+  - **Agrupamento Dinâmico**: Visualização agrupada por **Dia**, **Semana** ou **Mês**, com cabeçalhos dedicados e subtotais automáticos.
+  - **KPIs do Período**: Cards com Total de Entradas, Total de Saídas, Saldo Líquido e Contagem de registros do filtro ativo.
+  - **100% Responsivo**: Tabela no desktop e cards modernos em dispositivos móveis (< 768px).
+
+### 4. Gestão de Carteira de Ações
 - Cadastro de ativos de renda variável pelo *Ticker*.
 - **Edição de posições** (quantidade e preço médio) sem precisar deletar.
 - Acompanhamento do Total Investido vs Valor Atual.
