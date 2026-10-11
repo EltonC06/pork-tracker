@@ -787,8 +787,149 @@ body {
   padding: 0.875rem 1rem;
 }
 
+/* Shared layout: let flex/grid children shrink to the available content width. */
+.dashboard-shell { display: flex; flex-direction: column; min-height: 100dvh; }
+.dashboard-body { display: flex; flex: 1; position: relative; min-width: 0; }
+.main-content { flex: 1; min-width: 0; padding-bottom: 7rem; overflow-wrap: anywhere; }
+.main-content :where(.glass-card, .kpi-card, .grid-auto-fit > *, .dashboard-grid > *) { min-width: 0; }
+.input { min-width: 0; max-width: 100%; }
+button svg { flex-shrink: 0; }
+.sidebar { display: flex; flex-direction: column; height: 100dvh; min-height: 0; overflow-y: auto; }
+.mobile-header { display: none; }
+.page-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 2rem; }
+.page-header > * { min-width: 0; max-width: 100%; }
+.page-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.625rem; max-width: 100%; }
+.page-actions .input { flex: 1 1 14rem; width: auto; }
+.date-range { flex-wrap: wrap; }
+.date-range > div { flex: 1 1 12rem; min-width: 0; }
+.date-range .input { flex: 1; }
+.transactions-page { max-width: 75rem; margin: 0 auto; }
+.settings-page { max-width: 47.5rem; margin: 0 auto; }
+.accounts-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.dashboard-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+.grid-auto-fit { grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); }
+.account-card { padding: 1.5rem; container-type: inline-size; }
+.account-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+.account-identity { flex: 1 1 8rem; min-width: 0; }
+.account-balance { margin-left: auto; max-width: 100%; text-align: right; }
+.account-actions { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-top: 1.25rem; }
+.tab-bar { flex-wrap: wrap; row-gap: 0.75rem; }
+.tab-bar-item { min-width: 0; }
+.tab-bar-item svg { flex-shrink: 0; }
+.period-selector { display: flex; flex-wrap: wrap; gap: 0.375rem; background: var(--bg-surface); padding: 0.25rem; border-radius: 0.625rem; border: 1px solid var(--bg-border); }
+.period-selector button { flex: 1 1 auto; white-space: nowrap; min-height: 2.75rem; }
+.grouping-control { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; min-width: 0; }
+.grouping-control > div { flex-wrap: wrap; max-width: 100%; }
+.tx-group-header { flex-wrap: wrap; gap: 0.75rem; }
+.tx-group-title { min-width: 0; flex-wrap: wrap; }
+.tx-group-title svg, .tx-group-count { flex-shrink: 0; }
+.tx-group-count { white-space: nowrap; }
+.tx-group-subtotal { flex-wrap: wrap; min-width: 0; }
+.tx-group-subtotal > span:last-child { white-space: nowrap; }
+.transaction-card > div { flex-wrap: wrap; gap: 0.625rem; }
+.transaction-card > div > * { min-width: 0; max-width: 100%; }
+.transaction-card .badge { white-space: normal; }
+.table-scroll { max-width: 100%; overflow-x: auto; }
+.responsive-table { table-layout: fixed; }
+.responsive-table :is(th, td) { overflow-wrap: anywhere; }
+.responsive-table td > * { max-width: 100%; min-width: 0; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.875rem; }
+.form-grid > * { min-width: 0; }
+.form-actions { display: flex; flex-wrap: wrap; gap: 0.625rem; margin-top: 0.5rem; }
+.form-actions > button { min-width: min(100%, 8rem); }
+.modal-overlay { overflow-y: auto; overscroll-behavior: contain; }
+.modal-content, .confirm-dialog { max-height: calc(100dvh - 2rem); overflow-y: auto; overscroll-behavior: contain; overflow-wrap: anywhere; }
+.modal-content div, .confirm-dialog div { min-width: 0; max-width: 100%; }
+.modal-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; margin-bottom: 1.5rem; }
+.modal-heading h2 { min-width: 0; }
+.modal-heading button { flex-shrink: 0; min-width: 2.75rem; min-height: 2.75rem; }
+.allocation-legend-row { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; font-size: 0.8125rem; }
+.allocation-legend-row > div { min-width: 0; }
+.allocation-percent { flex-shrink: 0; white-space: nowrap; font-weight: 600; }
+.projection-chart { padding: 1.5rem; margin-bottom: 1.25rem; }
+.recharts-responsive-container { min-width: 0; }
+.recharts-tooltip-wrapper { max-width: min(18rem, calc(100vw - 4rem)); white-space: normal !important; }
+.recharts-default-tooltip { white-space: normal !important; overflow-wrap: anywhere; }
+.recharts-legend-item { max-width: 100%; overflow-wrap: anywhere; }
+
+@media (min-width: 1100px) {
+  .dashboard-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+}
+@media (min-width: 1280px) {
+  .accounts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Account cards can be narrow even in the two-column desktop layout. */
+@container (max-width: 40rem) {
+  .responsive-table, .responsive-table tbody { display: block; width: 100%; }
+  .responsive-table thead { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .responsive-table tbody tr { display: block; border: 1px solid var(--bg-border); border-radius: 0.75rem; padding: 0.5rem; margin-bottom: 0.75rem; }
+  .responsive-table tbody td { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.25rem; padding: 0.5rem; border: 0; width: auto; text-align: left; white-space: normal; }
+  .responsive-table td::before { content: attr(data-label); color: var(--text-muted); font-size: 0.6875rem; font-weight: 500; }
+  .responsive-table td[data-label="Ações"] { display: flex; justify-content: flex-end; gap: 0.5rem; }
+  .responsive-table td[data-label="Ações"]::before { content: none; }
+  .responsive-table td button { min-height: 2.75rem !important; min-width: 2.75rem; justify-content: center; }
+}
+
+@media (max-width: 768px) {
+  .main-content { padding: 1rem 1rem calc(6rem + env(safe-area-inset-bottom)); }
+  .mobile-header { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; width: 100%; padding: 0.75rem 1rem; background: var(--bg-surface); border-bottom: 1px solid var(--bg-border); position: sticky; top: 0; z-index: 30; }
+  .page-header { flex-direction: column; margin-bottom: 1.5rem; }
+  .page-actions, .period-selector { width: 100%; }
+  .page-actions > button { flex: 1 1 auto; justify-content: center; }
+  .account-card { padding: 1rem; }
+  .account-actions { gap: 0.75rem; }
+  .account-actions > div:first-child { flex-basis: 100% !important; }
+  .account-actions > div:last-child { margin-left: auto; }
+  .tab-bar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+  .tab-bar-item { margin: 0; flex-direction: column; justify-content: flex-start; font-size: 0.75rem; text-align: center; }
+  .tx-cards-mobile { display: flex; }
+  .tx-group-header { align-items: flex-start; }
+  .tx-group-title { width: 100%; gap: 0.5rem; }
+  .tx-group-title > span:first-of-type { flex: 1; min-width: 0; }
+  .tx-group-subtotal { width: 100%; justify-content: space-between; }
+  .grouping-control { width: 100%; }
+  .grouping-control > div { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; }
+  .grouping-control button { min-width: 0; min-height: 2.75rem; padding-inline: 0.25rem !important; }
+  .filter-bar { padding: 1rem; }
+  .filter-chip { min-height: 2.75rem; }
+  .quick-add-fab { width: 3.5rem; height: 3.5rem; padding: 0; justify-content: center; right: 1rem; bottom: calc(1rem + env(safe-area-inset-bottom)); }
+  .fab-label, .keyboard-hint { display: none !important; }
+  .quick-add-fab svg { width: 1.25rem; height: 1.25rem; }
+  .modal-content, .confirm-dialog { padding: 1.25rem; }
+  .modal-content div, .confirm-dialog div { flex-wrap: wrap; }
+  .modal-heading { flex-wrap: nowrap !important; }
+  .modal-content :is(.btn-primary, .btn-secondary, .btn-ghost, .btn-danger),
+  .main-content :is(.btn-primary, .btn-secondary, .btn-ghost, .btn-danger) { min-height: 2.75rem !important; }
+  .modal-content .input { font-size: 1rem !important; min-height: 2.75rem; }
+  .ofx-table-container { max-height: 55dvh; }
+  .responsive-table, .responsive-table tbody { display: block; width: 100%; }
+  .responsive-table thead { position: absolute !important; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .responsive-table tbody tr { display: block; border: 1px solid var(--bg-border); border-radius: 0.75rem; padding: 0.5rem; margin-bottom: 0.75rem; }
+  .responsive-table tbody td { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.25rem; padding: 0.5rem; border: 0; width: auto; text-align: left !important; white-space: normal !important; }
+  .responsive-table td::before { content: attr(data-label); color: var(--text-muted); font-size: 0.6875rem; font-weight: 500; }
+  .responsive-table td[data-label="Ações"] { display: flex; justify-content: flex-end; gap: 0.5rem; }
+  .responsive-table td[data-label="Ações"]::before { content: none; }
+  .responsive-table td button { min-height: 2.75rem !important; min-width: 2.75rem; justify-content: center; }
+  .responsive-table input[type="checkbox"] { width: 1.5rem; height: 1.5rem; }
+}
+
+@media (max-width: 480px) {
+  .form-grid { grid-template-columns: minmax(0, 1fr); }
+  .account-balance { flex-basis: 100%; text-align: left; }
+}
+
+
 /* --- Print Styles (for PDF Export) --- */
 @media print {
+  .mobile-header { display: none !important; }
+  .responsive-table { display: table !important; }
+  .responsive-table thead { display: table-header-group !important; position: static !important; width: auto !important; height: auto !important; clip-path: none !important; overflow: visible !important; white-space: normal !important; }
+  .responsive-table tbody { display: table-row-group !important; }
+  .responsive-table tbody tr { display: table-row !important; }
+  .responsive-table tbody td { display: table-cell !important; }
+  .responsive-table td::before { content: none !important; }
+
   /* Force light theme for printing to save ink and ensure legibility */
   :root {
     --bg-base: #ffffff;

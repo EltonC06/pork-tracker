@@ -128,14 +128,14 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
   return (
     <div>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+      <div className="page-header">
         <div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: '800', marginBottom: '0.25rem' }}>Contas</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             Gerencie seus saldos, transações e previsibilidades
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.625rem', alignItems: 'center' }}>
+        <div className="page-actions">
           <button
             type="button"
             className="btn-ghost"
@@ -160,7 +160,7 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
           action={{ label: '+ Nova Conta', onClick: () => setShowNewAccountModal(true) }}
         />
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div className="accounts-grid">
           {accountTypes.map(acct => {
             const acctSnaps = snapshots
               .filter(s => s.account_type_id === acct.id)
@@ -204,24 +204,25 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
                     {acctSnaps.length === 0 ? (
                       <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', textAlign: 'center' }}>Nenhum registro ainda</p>
                     ) : (
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Data</th>
-                            <th>Saldo</th>
-                            <th>Observações</th>
-                            <th style={{ width: 48 }}></th>
+                      <table className="data-table responsive-table" role="table">
+                        <thead role="rowgroup">
+                          <tr role="row">
+                            <th scope="col" role="columnheader">Data</th>
+                            <th scope="col" role="columnheader">Saldo</th>
+                            <th scope="col" role="columnheader">Observações</th>
+                            <th scope="col" role="columnheader" style={{ width: 48 }}></th>
                           </tr>
                         </thead>
-                        <tbody>
+                        <tbody role="rowgroup">
                           {[...acctSnaps].reverse().slice(0, 5).map(snap => (
-                            <tr key={snap.id}>
-                              <td>{formatDate(snap.snapshot_date)}</td>
-                              <td style={{ fontWeight: 600 }}>{formatCurrency(snap.balance)}</td>
-                              <td style={{ color: 'var(--text-muted)' }}>{snap.notes ?? '—'}</td>
-                              <td>
+                            <tr role="row" key={snap.id}>
+                              <td data-label="Data" role="cell">{formatDate(snap.snapshot_date)}</td>
+                              <td data-label="Saldo" role="cell" style={{ fontWeight: 600 }}>{formatCurrency(snap.balance)}</td>
+                              <td data-label="Observações" role="cell" style={{ color: 'var(--text-muted)' }}>{snap.notes ?? '—'}</td>
+                              <td data-label="Ações" role="cell">
                                 <button
                                   className="btn-danger"
+                                  aria-label="Excluir registro de saldo"
                                   style={{ padding: '0.25rem 0.5rem' }}
                                   onClick={() => setDeleteConfirm({ type: 'snapshot', id: snap.id, label: 'este registro de saldo' })}
                                 >
@@ -242,22 +243,22 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
                     {acctTxs.length === 0 ? (
                       <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', textAlign: 'center' }}>Nenhuma transação registrada.</p>
                     ) : (
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Data</th>
-                            <th>Tipo</th>
-                            <th>Categoria</th>
-                            <th>Descrição</th>
-                            <th>Valor</th>
-                            <th style={{ width: 80 }}></th>
+                      <table className="data-table responsive-table" role="table">
+                        <thead role="rowgroup">
+                          <tr role="row">
+                            <th scope="col" role="columnheader">Data</th>
+                            <th scope="col" role="columnheader">Tipo</th>
+                            <th scope="col" role="columnheader">Categoria</th>
+                            <th scope="col" role="columnheader">Descrição</th>
+                            <th scope="col" role="columnheader">Valor</th>
+                            <th scope="col" role="columnheader" style={{ width: 80 }}></th>
                           </tr>
                         </thead>
-                        <tbody>
+                        <tbody role="rowgroup">
                           {acctTxs.map(tx => (
-                            <tr key={tx.id}>
-                              <td>{formatDate(tx.date)}</td>
-                              <td>
+                            <tr role="row" key={tx.id}>
+                              <td data-label="Data" role="cell">{formatDate(tx.date)}</td>
+                              <td data-label="Tipo" role="cell">
                                 {tx.type === 'income' ? (
                                   <span style={{ color: 'var(--success-400)', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8125rem', fontWeight: 600 }}>
                                     <ArrowUpRight size={14} /> Receita
@@ -268,14 +269,14 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
                                   </span>
                                 )}
                               </td>
-                              <td style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
+                              <td data-label="Categoria" role="cell" style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
                                 {tx.category || '—'}
                               </td>
-                              <td>{tx.description || '—'}</td>
-                              <td style={{ fontWeight: 700, color: tx.type === 'income' ? 'var(--success-400)' : 'var(--text-primary)' }}>
+                              <td data-label="Descrição" role="cell">{tx.description || '—'}</td>
+                              <td data-label="Valor" role="cell" style={{ fontWeight: 700, color: tx.type === 'income' ? 'var(--success-400)' : 'var(--text-primary)' }}>
                                 {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
                               </td>
-                              <td>
+                              <td data-label="Ações" role="cell">
                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                                   <button className="btn-secondary" style={{ padding: '0.25rem 0.5rem', minHeight: 0 }} onClick={() => setShowEditTxModal(tx)} title="Editar">
                                     <Edit2 size={13} />
@@ -304,31 +305,31 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
                     {acctPlans.length === 0 ? (
                       <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', textAlign: 'center' }}>Nenhuma previsão configurada.</p>
                     ) : (
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Nome</th>
-                            <th>Frequência</th>
-                            <th>Próx. Data</th>
-                            <th>Valor</th>
-                            <th style={{ width: 48 }}></th>
+                      <table className="data-table responsive-table" role="table">
+                        <thead role="rowgroup">
+                          <tr role="row">
+                            <th scope="col" role="columnheader">Nome</th>
+                            <th scope="col" role="columnheader">Frequência</th>
+                            <th scope="col" role="columnheader">Próx. Data</th>
+                            <th scope="col" role="columnheader">Valor</th>
+                            <th scope="col" role="columnheader" style={{ width: 48 }}></th>
                           </tr>
                         </thead>
-                        <tbody>
+                        <tbody role="rowgroup">
                           {acctPlans.map(plan => (
-                            <tr key={plan.id}>
-                              <td style={{ fontWeight: 600 }}>{plan.name}</td>
-                              <td>
+                            <tr role="row" key={plan.id}>
+                              <td data-label="Nome" role="cell" style={{ fontWeight: 600 }}>{plan.name}</td>
+                              <td data-label="Frequência" role="cell">
                                 <span className="badge badge-neutral">
                                   {plan.frequency === 'monthly' ? 'Mensal' : plan.frequency === 'yearly' ? 'Anual' : 'Única'}
                                 </span>
                               </td>
-                              <td>{plan.target_date ? formatDate(plan.target_date) : '—'}</td>
-                              <td style={{ fontWeight: 700, color: plan.type === 'income' ? 'var(--success-400)' : 'var(--text-primary)' }}>
+                              <td data-label="Próx. Data" role="cell">{plan.target_date ? formatDate(plan.target_date) : '—'}</td>
+                              <td data-label="Valor" role="cell" style={{ fontWeight: 700, color: plan.type === 'income' ? 'var(--success-400)' : 'var(--text-primary)' }}>
                                 {plan.type === 'income' ? '+' : '-'}{formatCurrency(plan.amount)}
                               </td>
-                              <td>
-                                <button className="btn-danger" style={{ padding: '0.25rem 0.5rem' }} onClick={() => setDeleteConfirm({ type: 'plan', id: plan.id, label: 'esta previsão' })}>
+                              <td data-label="Ações" role="cell">
+                                <button className="btn-danger" aria-label="Excluir previsão" style={{ padding: '0.25rem 0.5rem' }} onClick={() => setDeleteConfirm({ type: 'plan', id: plan.id, label: 'esta previsão' })}>
                                   <Trash2 size={13} />
                                 </button>
                               </td>
@@ -428,7 +429,7 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
               <label className="label">Nome da Previsão</label>
               <input name="name" type="text" placeholder="ex: Salário Mensal, Aluguel" className="input" required />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div className="form-grid">
               <div>
                 <label className="label">Tipo</label>
                 <select name="type" className="input" required defaultValue="expense">
@@ -441,7 +442,7 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
                 <input name="amount" type="number" step="0.01" min="0.01" required placeholder="0,00" className="input" />
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div className="form-grid">
               <div>
                 <label className="label">Frequência</label>
                 <select name="frequency" className="input" required defaultValue="monthly">

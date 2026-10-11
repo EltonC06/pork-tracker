@@ -115,7 +115,7 @@ export default function ChartsClient({ accountTypes, snapshots, stocks, priceHis
   return (
     <div>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+      <div className="page-header">
         <div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: '800', marginBottom: '0.25rem' }}>Gráficos</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
@@ -123,7 +123,7 @@ export default function ChartsClient({ accountTypes, snapshots, stocks, priceHis
           </p>
         </div>
         {/* Period selector */}
-        <div style={{ display: 'flex', gap: '0.375rem', background: 'var(--bg-surface)', padding: '4px', borderRadius: '10px', border: '1px solid var(--bg-border)' }}>
+        <div className="period-selector" aria-label="Período dos gráficos">
           {PERIODS.map(p => (
             <button
               key={p.value}
@@ -155,7 +155,7 @@ export default function ChartsClient({ accountTypes, snapshots, stocks, priceHis
             Soma de todos os saldos registrados por mês
           </p>
           {patrimonyData.length >= 2 ? (
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={250} minWidth={0}>
               <AreaChart data={patrimonyData}>
                 <defs>
                   <linearGradient id="cg1" x1="0" y1="0" x2="0" y2="1">
@@ -186,7 +186,7 @@ export default function ChartsClient({ accountTypes, snapshots, stocks, priceHis
             </p>
             {latestPerAccount.length > 0 ? (
               <>
-                <ResponsiveContainer width="100%" height={200}>
+                <ResponsiveContainer width="100%" height={200} minWidth={0}>
                   <PieChart>
                     <Pie
                       data={latestPerAccount}
@@ -206,12 +206,12 @@ export default function ChartsClient({ accountTypes, snapshots, stocks, priceHis
                 </ResponsiveContainer>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.75rem' }}>
                   {latestPerAccount.map((a, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8125rem' }}>
+                    <div key={i} className="allocation-legend-row">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: a.color, flexShrink: 0 }} />
                         <span style={{ color: 'var(--text-secondary)' }}>{a.name}</span>
                       </div>
-                      <span style={{ fontWeight: 600 }}>
+                      <span className="allocation-percent">
                         {grandTotal > 0 ? ((a.value / grandTotal) * 100).toFixed(1) : 0}%
                       </span>
                     </div>
@@ -230,7 +230,7 @@ export default function ChartsClient({ accountTypes, snapshots, stocks, priceHis
               Saldo mensal por conta cadastrada
             </p>
             {multiLineData.length >= 2 ? (
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={250} minWidth={0}>
                 <LineChart data={multiLineData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--bg-border)" vertical={false} />
                   <XAxis dataKey="month" tickFormatter={formatMonth} tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -263,7 +263,7 @@ export default function ChartsClient({ accountTypes, snapshots, stocks, priceHis
             <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', marginBottom: '1rem' }}>
               Resultado em R$ por ticker
             </p>
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={220} minWidth={0}>
               <BarChart data={stockBarData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--bg-border)" horizontal={false} />
                 <XAxis type="number" tickFormatter={v => `R$${(v/1000).toFixed(0)}k`} tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />

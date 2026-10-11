@@ -45,7 +45,7 @@ export default function StockEditModal({ isOpen, onClose, position }: StockEditM
             O ticker não pode ser alterado. Delete e recrie para mudar.
           </p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+        <div className="form-grid">
           <div>
             <label className="label" htmlFor="edit-qty">Quantidade</label>
             <input

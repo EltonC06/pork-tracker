@@ -83,7 +83,7 @@ export default function StocksClient({ positions }: Props) {
   return (
     <div>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+      <div className="page-header">
         <div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: '800', marginBottom: '0.25rem' }}>Ações</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
@@ -99,7 +99,7 @@ export default function StocksClient({ positions }: Props) {
       {positions.length > 0 && (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))',
           gap: '1rem',
           marginBottom: '1.5rem',
         }}>
@@ -270,7 +270,7 @@ export default function StocksClient({ positions }: Props) {
       {/* Modal: Adicionar Ativo */}
       <FormModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Adicionar Ativo">
         <form onSubmit={handleAddPosition} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+          <div className="form-grid">
             <div>
               <label className="label" htmlFor="stock-ticker">Ticker</label>
               <input id="stock-ticker" name="ticker" className="input" placeholder="ex: PETR4" required style={{ textTransform: 'uppercase' }} />
@@ -280,7 +280,7 @@ export default function StocksClient({ positions }: Props) {
               <input id="stock-qty" name="quantity" type="number" step="0.000001" min="0.000001" required placeholder="100" className="input" />
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+          <div className="form-grid">
             <div>
               <label className="label" htmlFor="stock-avgprice">Preço Médio (R$)</label>
               <input id="stock-avgprice" name="avg_price" type="number" step="0.0001" min="0.0001" required placeholder="28.50" className="input" />

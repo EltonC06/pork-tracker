@@ -53,7 +53,7 @@ export default function TransactionForm({
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <input type="hidden" name="account_type_id" value={accountTypeId} />
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+        <div className="form-grid">
           <div>
             <label className="label">Tipo</label>
             <select name="type" className="input" required defaultValue={editingTransaction?.type ?? 'expense'}>
@@ -76,7 +76,7 @@ export default function TransactionForm({
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+        <div className="form-grid">
           <div>
             <label className="label">Categoria</label>
             <input

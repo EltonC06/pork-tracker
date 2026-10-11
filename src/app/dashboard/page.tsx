@@ -97,7 +97,7 @@ export default async function DashboardPage() {
       {/* KPI Cards */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))',
         gap: '1rem',
         marginBottom: '2rem',
       }}>
@@ -134,9 +134,9 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="dashboard-grid">
         {/* Patrimony Chart */}
-        <div className="glass-card lg:col-span-2" style={{ padding: '1.5rem' }}>
+        <div className="glass-card dashboard-chart" style={{ padding: '1.5rem' }}>
           <div style={{ marginBottom: '1.25rem' }}>
             <h2 style={{ fontSize: '1.0625rem', fontWeight: '700' }}>Evolução do Patrimônio</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>Soma de todos os saldos registrados por mês</p>
@@ -199,8 +199,8 @@ export default async function DashboardPage() {
                   return (
                     <div key={acct.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                       <span style={{ fontSize: '1.25rem', minWidth: '1.5rem' }}>{acct.icon ?? '💰'}</span>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                           <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{acct.name}</span>
                           <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                             {formatCurrency(balance)}

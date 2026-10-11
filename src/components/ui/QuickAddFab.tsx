@@ -176,7 +176,7 @@ export default function QuickAddFab({
         }}>
           <Plus size={16} strokeWidth={3} />
         </div>
-        <span>Novo Lançamento</span>
+        <span className="fab-label">Novo Lançamento</span>
         <span className="fab-shortcut-badge">Ctrl+N</span>
       </button>
 
@@ -221,7 +221,7 @@ export default function QuickAddFab({
           </div>
 
           {/* Amount & Account */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.875rem' }}>
+          <div className="form-grid">
             <div>
               <label className="label" htmlFor="quick-add-amount">Valor (R$)*</label>
               <div style={{ position: 'relative' }}>
@@ -339,7 +339,7 @@ export default function QuickAddFab({
           </div>
 
           {/* Shortcut hint */}
-          <div style={{
+          <div className="keyboard-hint" style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -361,7 +361,7 @@ export default function QuickAddFab({
           </div>
 
           {/* Actions */}
-          <div style={{ display: 'flex', gap: '0.625rem', marginTop: '0.5rem' }}>
+          <div className="form-actions">
             <button
               type="button"
               className="btn-ghost"

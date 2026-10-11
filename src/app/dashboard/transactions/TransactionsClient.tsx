@@ -371,7 +371,7 @@ export default function TransactionsClient({
   }
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1.5rem 6rem' }}>
+    <div className="transactions-page">
       {/* Page Header */}
       <div style={{
         display: 'flex',
@@ -436,7 +436,7 @@ export default function TransactionsClient({
       {/* Summary KPI Cards */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))',
         gap: '1rem',
         marginBottom: '1.75rem',
       }}>
@@ -495,7 +495,7 @@ export default function TransactionsClient({
         {/* Top filter row: Search input + Period Select + Group By */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))',
           gap: '0.75rem',
           alignItems: 'center',
         }}>
@@ -647,7 +647,7 @@ export default function TransactionsClient({
           </div>
 
           {/* Grouping Selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div className="grouping-control">
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Agrupar:</span>
             <div style={{
               display: 'inline-flex',
@@ -712,7 +712,7 @@ export default function TransactionsClient({
 
         {/* Custom Date Pickers when 'custom' is active */}
         {periodPreset === 'custom' && (
-          <div style={{
+          <div className="date-range" style={{
             display: 'flex',
             alignItems: 'center',
             gap: '0.75rem',
@@ -797,7 +797,7 @@ export default function TransactionsClient({
               )}
 
               {/* Desktop Table View */}
-              <div className="glass-card tx-table-desktop" style={{ overflow: 'hidden' }}>
+              <div className="glass-card tx-table-desktop table-scroll">
                 <table className="data-table" style={{ width: '100%' }}>
                   <thead>
                     <tr>
@@ -941,7 +941,7 @@ export default function TransactionsClient({
                   return (
                     <div
                       key={tx.id}
-                      className="glass-card"
+                      className="glass-card transaction-card"
                       style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}
                     >
                       {/* Top: Account + Date */}
@@ -1025,7 +1025,7 @@ export default function TransactionsClient({
         >
           <form onSubmit={handleUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {/* Type */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div className="form-grid">
               <div>
                 <label className="label">Tipo</label>
                 <select name="type" className="input" required defaultValue={editingTx.type}>
@@ -1048,7 +1048,7 @@ export default function TransactionsClient({
             </div>
 
             {/* Account & Date */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div className="form-grid">
               <div>
                 <label className="label">Conta</label>
                 <select

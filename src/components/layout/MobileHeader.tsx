@@ -8,17 +8,7 @@ interface Props {
 
 export default function MobileHeader({ onMenuClick }: Props) {
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '1rem',
-      background: 'var(--bg-surface)',
-      borderBottom: '1px solid var(--bg-border)',
-      position: 'sticky',
-      top: 0,
-      zIndex: 30,
-    }} className="md:hidden">
+    <header className="mobile-header">
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         <div style={{
           width: '28px', height: '28px',
@@ -32,7 +22,7 @@ export default function MobileHeader({ onMenuClick }: Props) {
           <span className="gradient-text">Pork</span> Tracker
         </span>
       </div>
-      <button 
+      <button aria-label="Abrir menu"
         onClick={onMenuClick}
         style={{
           background: 'transparent',
@@ -44,6 +34,6 @@ export default function MobileHeader({ onMenuClick }: Props) {
       >
         <Menu size={24} />
       </button>
-    </div>
+    </header>
   )
 }
