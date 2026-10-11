@@ -192,3 +192,24 @@ Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
 2. **Padrão Client/Server Components**: Server busca dados, Client renderiza UI interativa.
 3. **CSS Custom Properties** como Design System centralizado em `globals.css`.
 4. **Semantic Commits**: `feat:`, `fix:`, `refactor:`, `docs:`, `style:`, `build:`.
+
+## 📱 Responsividade (v2.4)
+
+- Layout do dashboard com larguras flexíveis, margens consistentes e cabeçalho móvel alinhado à tela.
+- Históricos de Contas apresentados como cards com rótulos quando a tela ou o próprio card fica estreito; os controles de edição e exclusão continuam disponíveis.
+- Extrato com cards visíveis no celular, subtotais em linha própria, filtros de agrupamento e datas adaptáveis.
+- Gráficos com seletor de período abaixo do título no celular e legendas que acomodam nomes longos.
+- Formulários em uma coluna em telas pequenas, modais com rolagem vertical e altura limitada à área visível, incluindo a prévia de importação OFX.
+- Botão de lançamento rápido compacto no celular, com nome acessível e espaço reservado no final da página.
+- Tabelas preservadas na impressão/PDF.
+
+### Validação de layout
+
+Validado em Chromium com os componentes reais e dados fictícios, com as gravações no servidor desativadas: larguras de 320, 360, 390, 430, 768, 1024 e 1440 px. A cobertura inclui Dashboard, Contas e suas três abas, Extrato, Gráficos, Resumo, Ações, Configurações, criação de conta/saldo/transação, OFX e lançamento rápido. Também foi verificado um viewport com 430 px de altura. Isso verifica o layout; o teste no aparelho real e com login deve ser feito no deploy da branch, quando disponível.
+
+### Testar antes do merge
+
+1. Enviar a branch ao GitHub e conferir o check de deployment da Vercel no commit/PR.
+2. Se a integração gerar um Preview Deployment, abrir esse endereço pelo celular e testar Contas, Extrato, Gráficos, filtros e modais.
+3. O preview pode exigir acesso à Vercel e variáveis de ambiente habilitadas para Preview. O banco usado será o configurado no deploy; não há isolamento de dados implícito.
+4. Se não houver preview disponível, o commit por si só não atualiza o endereço principal. O merge em main continua dependendo de aprovação explícita.
