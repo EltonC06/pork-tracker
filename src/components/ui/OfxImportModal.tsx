@@ -19,7 +19,7 @@ import FormModal from '@/components/ui/FormModal'
 import { parseOfx, matchAccount, type OfxTransaction, type OfxParseResult } from '@/lib/ofxParser'
 import { importTransactionsBatch } from '@/app/actions/ofx'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import type { AccountType, Transaction } from '@/types/database'
+import type { AccountType, Transaction, ExpenseCategoryOption } from '@/types/database'
 
 interface OfxImportModalProps {
   isOpen: boolean
@@ -27,6 +27,7 @@ interface OfxImportModalProps {
   accounts: AccountType[]
   existingTransactions?: Transaction[]
   initialAccountId?: string
+  categories: ExpenseCategoryOption[]
 }
 
 export default function OfxImportModal({
@@ -35,6 +36,7 @@ export default function OfxImportModal({
   accounts,
   existingTransactions = [],
   initialAccountId,
+  categories,
 }: OfxImportModalProps) {
   const [isPending, startTransition] = useTransition()
   const [isDragging, setIsDragging] = useState(false)
@@ -104,6 +106,9 @@ export default function OfxImportModal({
 
           return {
             ...tx,
+            suggestedCategory: tx.type === 'expense'
+              ? categories.find(category => category.active && category.name.toLocaleLowerCase('pt-BR') === tx.suggestedCategory?.trim().toLocaleLowerCase('pt-BR'))?.name ?? ''
+              : tx.suggestedCategory,
             isDuplicate: isDup,
             selected: !isDup, // unselect duplicates by default!
           }
@@ -573,17 +578,21 @@ export default function OfxImportModal({
 
                       {/* Category (inline editable) */}
                       <td>
-                        <input
-                          type="text"
-                          value={tx.suggestedCategory}
-                          onChange={(e) => updateCategory(tx.id, e.target.value)}
-                          className="input"
-                          style={{
-                            padding: '0.2rem 0.5rem',
-                            fontSize: '0.75rem',
-                            height: 'auto',
-                          }}
-                        />
+                        {tx.type === 'expense' ? (
+                          <select
+                            value={tx.suggestedCategory}
+                            onChange={(event) => updateCategory(tx.id, event.target.value)}
+                            className="input"
+                            aria-label={`Categoria de ${tx.description}`}
+                          >
+                            <option value="">Sem categoria</option>
+                            {categories.filter(category => category.active).map(category => (
+                              <option key={category.id} value={category.name}>{category.name}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input type="text" value={tx.suggestedCategory} onChange={(event) => updateCategory(tx.id, event.target.value)} className="input" aria-label={`Categoria da receita ${tx.description}`} />
+                        )}
                       </td>
 
                       {/* Amount */}

@@ -7,7 +7,7 @@ import { createAccountType, deleteSnapshot } from '@/app/actions/accounts'
 import { deleteTransaction } from '@/app/actions/transactions'
 import { createRecurringPlan, deleteRecurringPlan } from '@/app/actions/planning'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import type { AccountType, AccountSnapshot, Transaction, RecurringPlan } from '@/types/database'
+import type { AccountType, AccountSnapshot, Transaction, RecurringPlan, ExpenseCategoryOption } from '@/types/database'
 import AccountLineChart from '@/components/charts/AccountLineChart'
 import TabBar from '@/components/ui/TabBar'
 import EmptyState from '@/components/ui/EmptyState'
@@ -36,9 +36,10 @@ interface Props {
   snapshots: AccountSnapshot[]
   transactions: Transaction[]
   recurringPlans: RecurringPlan[]
+  categories: ExpenseCategoryOption[]
 }
 
-export default function AccountsClient({ accountTypes, snapshots, transactions, recurringPlans }: Props) {
+export default function AccountsClient({ accountTypes, snapshots, transactions, recurringPlans, categories }: Props) {
   const [isPending, startTransition] = useTransition()
 
   // UI State
@@ -396,6 +397,7 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
           onClose={() => setShowTxModal(null)}
           accountName={accountTypes.find(a => a.id === showTxModal)?.name ?? ''}
           accountTypeId={showTxModal}
+          categories={categories}
         />
       )}
 
@@ -407,6 +409,7 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
           accountName={accountTypes.find(a => a.id === showEditTxModal.account_type_id)?.name ?? ''}
           accountTypeId={showEditTxModal.account_type_id ?? ''}
           editingTransaction={showEditTxModal}
+          categories={categories}
         />
       )}
 
@@ -481,6 +484,7 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
         onClose={() => setShowOfxModal(null)}
         accounts={accountTypes}
         existingTransactions={transactions}
+        categories={categories}
         initialAccountId={showOfxModal === 'open' ? undefined : showOfxModal || undefined}
       />
     </div>

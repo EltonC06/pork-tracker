@@ -5,6 +5,8 @@ import { Plus, ArrowDownLeft, ArrowUpRight, Check, Sparkles } from 'lucide-react
 import { toast } from 'sonner'
 import { createTransaction } from '@/app/actions/transactions'
 import FormModal from './FormModal'
+import ExpenseCategorySelect from './ExpenseCategorySelect'
+import type { ExpenseCategoryOption } from '@/types/database'
 
 export interface QuickAddAccount {
   id: string
@@ -15,14 +17,14 @@ export interface QuickAddAccount {
 
 interface QuickAddFabProps {
   accounts: QuickAddAccount[]
-  initialCategories?: string[]
+  categories?: ExpenseCategoryOption[]
 }
 
 const STORAGE_KEY_LAST_ACCOUNT = 'pork_last_account_id'
 
 export default function QuickAddFab({
   accounts = [],
-  initialCategories = [],
+  categories = [],
 }: QuickAddFabProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -32,6 +34,7 @@ export default function QuickAddFab({
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('')
+  const [categoryId, setCategoryId] = useState('')
   // User manual selection override (if changed in select)
   const [selectedAccountId, setSelectedAccountId] = useState('')
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
@@ -77,19 +80,13 @@ export default function QuickAddFab({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  // Common category suggestions
-  const suggestedCategories = useMemo(() => {
-    const baseSuggestions = ['Alimentação', 'Transporte', 'Moradia', 'Lazer', 'Saúde', 'Salário', 'Investimento']
-    const combined = Array.from(new Set([...initialCategories, ...baseSuggestions])).filter(Boolean)
-    return combined.slice(0, 8)
-  }, [initialCategories])
-
   const resetForm = (full = false) => {
     setAmount('')
     setDescription('')
     if (full) {
       setType('expense')
       setCategory('')
+      setCategoryId('')
       setDate(new Date().toISOString().split('T')[0])
     }
   }
@@ -114,7 +111,11 @@ export default function QuickAddFab({
     }
     fd.append('amount', parsedAmount.toString())
     fd.append('type', type)
-    if (category.trim()) fd.append('category', category.trim())
+    if (type === 'expense') {
+      fd.append('category_id', categoryId)
+    } else if (category.trim()) {
+      fd.append('category', category.trim())
+    }
     if (date) fd.append('date', date)
     fd.append('description', description.trim())
 
@@ -221,8 +222,8 @@ export default function QuickAddFab({
           </div>
 
           {/* Amount & Account */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.875rem' }}>
-            <div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.875rem' }}>
+            <div style={{ minWidth: 0 }}>
               <label className="label" htmlFor="quick-add-amount">Valor (R$)*</label>
               <div style={{ position: 'relative' }}>
                 <input
@@ -245,7 +246,7 @@ export default function QuickAddFab({
               </div>
             </div>
 
-            <div>
+            <div style={{ minWidth: 0 }}>
               <label className="label" htmlFor="quick-add-account">Conta</label>
               <select
                 id="quick-add-account"
@@ -281,49 +282,29 @@ export default function QuickAddFab({
             />
           </div>
 
-          {/* Category with autocomplete datalist + quick chips */}
+          {/* Expense categories are selected from the user's catalog. */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <label className="label" htmlFor="quick-add-category">Categoria</label>
               <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>opcional</span>
             </div>
-            <input
-              id="quick-add-category"
-              type="text"
-              list="quick-add-categories-list"
-              placeholder="ex: Alimentação, Transporte, Lazer..."
-              className="input"
-              value={category}
-              onChange={e => setCategory(e.target.value)}
-            />
-            <datalist id="quick-add-categories-list">
-              {suggestedCategories.map(cat => (
-                <option key={cat} value={cat} />
-              ))}
-            </datalist>
-
-            {/* Suggested category pills */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginTop: '0.5rem' }}>
-              {suggestedCategories.slice(0, 5).map(cat => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setCategory(cat)}
-                  style={{
-                    fontSize: '0.6875rem',
-                    padding: '0.2rem 0.5rem',
-                    borderRadius: '9999px',
-                    border: category === cat ? '1px solid var(--brand-500)' : '1px solid var(--bg-border)',
-                    background: category === cat ? 'rgba(99, 102, 241, 0.15)' : 'var(--bg-surface)',
-                    color: category === cat ? 'var(--brand-400)' : 'var(--text-muted)',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+            {type === 'expense' ? (
+              <ExpenseCategorySelect
+                id="quick-add-category"
+                categories={categories}
+                value={categoryId}
+                onChange={setCategoryId}
+              />
+            ) : (
+              <input
+                id="quick-add-category"
+                type="text"
+                placeholder="Categoria da receita"
+                className="input"
+                value={category}
+                onChange={e => setCategory(e.target.value)}
+              />
+            )}
           </div>
 
           {/* Date */}
@@ -339,7 +320,7 @@ export default function QuickAddFab({
           </div>
 
           {/* Shortcut hint */}
-          <div style={{
+          <div className="quick-add-shortcut-hint" style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -361,7 +342,7 @@ export default function QuickAddFab({
           </div>
 
           {/* Actions */}
-          <div style={{ display: 'flex', gap: '0.625rem', marginTop: '0.5rem' }}>
+          <div className="quick-add-actions" style={{ display: 'flex', gap: '0.625rem', marginTop: '0.5rem' }}>
             <button
               type="button"
               className="btn-ghost"

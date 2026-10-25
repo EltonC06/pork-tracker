@@ -9,6 +9,30 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      expense_categories: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          normalized_name: string
+          is_default: boolean
+          active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          is_default?: boolean
+          active?: boolean
+          created_at?: string
+        }
+        Update: {
+          name?: string
+          active?: boolean
+        }
+        Relationships: []
+      }
       account_types: {
         Row: {
           id: string
@@ -34,6 +58,7 @@ export interface Database {
           color?: string | null
           created_at?: string
         }
+        Relationships: []
       }
       account_snapshots: {
         Row: {
@@ -63,6 +88,7 @@ export interface Database {
           notes?: string | null
           created_at?: string
         }
+        Relationships: []
       }
       stock_positions: {
         Row: {
@@ -95,6 +121,7 @@ export interface Database {
           last_updated?: string | null
           created_at?: string
         }
+        Relationships: []
       }
       stock_price_history: {
         Row: {
@@ -121,6 +148,7 @@ export interface Database {
           recorded_date?: string
           created_at?: string
         }
+        Relationships: []
       }
       transactions: {
         Row: {
@@ -130,6 +158,7 @@ export interface Database {
           amount: number
           type: 'income' | 'expense'
           category: string | null
+          category_id: string | null
           date: string
           description: string | null
           created_at: string
@@ -141,6 +170,7 @@ export interface Database {
           amount: number
           type: 'income' | 'expense'
           category?: string | null
+          category_id?: string | null
           date?: string
           description?: string | null
           created_at?: string
@@ -152,10 +182,12 @@ export interface Database {
           amount?: number
           type?: 'income' | 'expense'
           category?: string | null
+          category_id?: string | null
           date?: string
           description?: string | null
           created_at?: string
         }
+        Relationships: []
       }
       recurring_plans: {
         Row: {
@@ -194,6 +226,7 @@ export interface Database {
           last_processed_date?: string | null
           created_at?: string
         }
+        Relationships: []
       }
     }
     Views: {
@@ -214,6 +247,8 @@ export type AccountSnapshot = Database['public']['Tables']['account_snapshots'][
 export type StockPosition = Database['public']['Tables']['stock_positions']['Row']
 export type StockPriceHistory = Database['public']['Tables']['stock_price_history']['Row']
 export type Transaction = Database['public']['Tables']['transactions']['Row']
+export type ExpenseCategory = Database['public']['Tables']['expense_categories']['Row']
+export type ExpenseCategoryOption = Pick<ExpenseCategory, 'id' | 'name' | 'active'>
 export type RecurringPlan = Database['public']['Tables']['recurring_plans']['Row']
 
 // Extended types with computed fields
