@@ -158,10 +158,11 @@ npm install
 1. Crie um projeto no Supabase.
 2. Acesse o **SQL Editor** no painel do Supabase.
 3. Em um projeto novo, execute `supabase/migration_v3.sql` para criar as tabelas iniciais. **Não execute esse arquivo em um banco existente**, pois ele remove as tabelas antigas.
-4. Execute `supabase/migrations/20261024000000_expense_categories.sql` para adicionar o catálogo de categorias, preservar e vincular as despesas existentes. Aplique essa migração antes de publicar a versão 2.4.
-5. Mantenha a confirmação de e-mail habilitada em produção. Para testes locais, ela pode ser desativada temporariamente.
-6. Em **Authentication > URL Configuration**, configure a `Site URL` e autorize somente as URLs necessárias, como `http://localhost:3000/auth/callback` durante o desenvolvimento.
-7. Em **Authentication > Password**, configure a política mínima de senha e habilite a proteção contra senhas vazadas quando disponível.
+4. Execute `supabase/migrations/20261027024508_expense_categories.sql` para adicionar o catálogo de categorias, preservar e vincular as despesas existentes. Aplique essa migração antes de publicar a versão 2.4.
+5. Execute `supabase/migrations/20261027024659_expense_category_owner_index.sql` para indexar a chave estrangeira das categorias.
+6. Mantenha a confirmação de e-mail habilitada em produção. Para testes locais, ela pode ser desativada temporariamente.
+7. Em **Authentication > URL Configuration**, configure a `Site URL` e autorize somente as URLs necessárias, como `http://localhost:3000/auth/callback` durante o desenvolvimento.
+8. Em **Authentication > Password**, configure a política mínima de senha e habilite a proteção contra senhas vazadas quando disponível.
 
 ### 4. Variáveis de Ambiente
 Crie um arquivo `.env.local` na raiz:

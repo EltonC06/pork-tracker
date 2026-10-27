@@ -72,6 +72,9 @@ $$;
 reset role;
 do $$
 begin
+  if to_regclass('public.transactions_expense_category_owner_idx') is null then
+    raise exception 'Composite foreign key index was not created';
+  end if;
   if has_table_privilege('anon', 'public.expense_categories', 'SELECT')
     or has_table_privilege('authenticated', 'public.expense_categories', 'DELETE')
     or has_table_privilege('authenticated', 'public.expense_categories', 'TRUNCATE')
