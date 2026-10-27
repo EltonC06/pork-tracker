@@ -2,6 +2,9 @@
 create role anon nologin;
 create role authenticated nologin;
 create role service_role nologin;
+-- Espelha as permissões padrão observadas no projeto Supabase existente.
+alter default privileges for role postgres in schema public
+  grant all on tables to anon, authenticated, service_role;
 create schema auth;
 create table auth.users (id uuid primary key);
 create function auth.uid() returns uuid

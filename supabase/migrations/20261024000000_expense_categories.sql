@@ -86,7 +86,9 @@ create trigger on_auth_user_created_seed_expense_categories
   for each row execute function private.seed_expense_categories();
 
 alter table public.expense_categories enable row level security;
-revoke all on public.expense_categories from anon;
+-- Projetos existentes podem conceder ALL automaticamente a novas tabelas de
+-- public. Remova essas concessões antes de liberar somente as operações usadas.
+revoke all on public.expense_categories from public, anon, authenticated;
 grant select on public.expense_categories to authenticated;
 grant insert (user_id, name) on public.expense_categories to authenticated;
 grant update (active) on public.expense_categories to authenticated;

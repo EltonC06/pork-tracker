@@ -70,4 +70,14 @@ begin
 end;
 $$;
 reset role;
+do $$
+begin
+  if has_table_privilege('anon', 'public.expense_categories', 'SELECT')
+    or has_table_privilege('authenticated', 'public.expense_categories', 'DELETE')
+    or has_table_privilege('authenticated', 'public.expense_categories', 'TRUNCATE')
+    or has_column_privilege('authenticated', 'public.expense_categories', 'name', 'UPDATE') then
+    raise exception 'New table retained broad default privileges';
+  end if;
+end;
+$$;
 select 'expense_categories local verification passed' as result;
