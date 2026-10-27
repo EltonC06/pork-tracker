@@ -48,15 +48,33 @@ export async function importTransactionsBatch(input: ImportBatchData) {
   const { account_type_id, transactions } = parsed.data
 
   // Prepare batch records
-  const rows = transactions.map(tx => ({
-    user_id: user.id,
-    account_type_id,
-    amount: tx.amount,
-    type: tx.type,
-    category: tx.category ? tx.category.trim() : null,
-    date: tx.date,
-    description: tx.description.trim(),
-  }))
+  const { data: categories, error: categoriesError } = await supabase
+    .from('expense_categories')
+    .select('id, name')
+    .eq('user_id', user.id)
+    .eq('active', true)
+  if (categoriesError) throw new Error('Não foi possível carregar as categorias.')
+  const categoryByName = new Map((categories ?? []).map(item => [item.name.toLocaleLowerCase('pt-BR'), item]))
+
+  const rows = transactions.map(tx => {
+    const requestedName = tx.category?.trim() ?? ''
+    const registered = tx.type === 'expense'
+      ? categoryByName.get(requestedName.toLocaleLowerCase('pt-BR'))
+      : undefined
+    if (tx.type === 'expense' && requestedName && !registered) {
+      throw new Error(`Cadastre ou remova a categoria “${requestedName}” antes da importação.`)
+    }
+    return {
+      user_id: user.id,
+      account_type_id,
+      amount: tx.amount,
+      type: tx.type,
+      category_id: tx.type === 'expense' ? registered?.id ?? null : null,
+      category: tx.type === 'expense' ? registered?.name ?? null : requestedName || null,
+      date: tx.date,
+      description: tx.description.trim(),
+    }
+  })
 
   const db = supabase as any
 
@@ -70,6 +88,7 @@ export async function importTransactionsBatch(input: ImportBatchData) {
   revalidatePath('/dashboard/transactions')
   revalidatePath('/dashboard/accounts')
   revalidatePath('/dashboard/planning')
+  revalidatePath('/dashboard/categories')
 
   return {
     success: true,

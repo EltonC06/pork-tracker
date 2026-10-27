@@ -1,0 +1,14 @@
+-- Mínimo da infraestrutura Auth do Supabase para um PostgreSQL local.
+create role anon nologin;
+create role authenticated nologin;
+create role service_role nologin;
+-- Espelha as permissões padrão observadas no projeto Supabase existente.
+alter default privileges for role postgres in schema public
+  grant all on tables to anon, authenticated, service_role;
+create schema auth;
+create table auth.users (id uuid primary key);
+create function auth.uid() returns uuid
+language sql stable
+as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
+grant usage on schema auth to authenticated;
+grant execute on function auth.uid() to authenticated;

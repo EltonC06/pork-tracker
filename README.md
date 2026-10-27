@@ -4,6 +4,12 @@ Um sistema pessoal completo para planejamento financeiro, focado em alta perform
 
 ## 🚀 Funcionalidades
 
+### Categorias de despesas (v2.4)
+- Categorias iniciais e categorias personalizadas por usuário, selecionadas em dropdown nos lançamentos e na revisão OFX.
+- Tela `/dashboard/categories` com participação percentual no total de despesas da semana ou mês, composição em pizza, comparação em barras e evolução dos últimos 12 meses.
+- Categorias podem ser desativadas sem apagar o histórico. Despesas antigas são vinculadas ao catálogo pela migração aditiva.
+- Receitas mantêm suas categorias livres; os percentuais incluem somente despesas realizadas.
+
 ### 1. Gestão de Contas (Bancos, Cofre, Carteiras)
 - Cadastro flexível de contas com ícones e cores customizáveis.
 - **Edição** de nome, ícone e cor de contas existentes.
@@ -12,13 +18,13 @@ Um sistema pessoal completo para planejamento financeiro, focado em alta perform
 
 ### 2. Transações (Gastos & Ganhos)
 - Registro de despesas e receitas por conta.
-- **Categorias customizáveis** (texto livre: Alimentação, Transporte, etc.).
+- **Categorias de despesas** escolhidas no catálogo pessoal; receitas continuam com categoria em texto livre.
 - Edição e exclusão de transações com confirmação visual.
 - Transações são registros de fluxo de caixa — **não alteram o saldo da conta**.
 
 ### 3. Extrato Global & Lançamento Rápido (v2.1)
 - **Quick Add FAB**: Botão flutuante global em todas as telas do dashboard com atalho `Ctrl+N` / `Cmd+N`.
-- **Registro Ultrarrápido**: Modal otimizado com foco automático no valor, alternador intuitivo Despesa/Receita e autocomplete de categorias.
+- **Registro Ultrarrápido**: Modal otimizado com foco automático no valor, alternador intuitivo Despesa/Receita e seletor de categorias de despesas.
 - **Lançamento Contínuo**: Suporte a atalhos de teclado:
   - `Ctrl+Enter` para salvar e fechar.
   - `Ctrl+Shift+Enter` para **Salvar e Novo** (lança e mantém o modal aberto para o próximo registro).
@@ -34,7 +40,7 @@ Um sistema pessoal completo para planejamento financeiro, focado em alta perform
 - **Identificação Automática de Banco**: O sistema lê o código FEBRABAN e o nome da instituição no arquivo e pré-seleciona a conta de destino correspondente cadastrada no Pork Tracker.
 - **Detecção Inteligente de Duplicatas**: Lançamentos com mesma data, valor e tipo já existentes na conta são identificados como possíveis duplicatas e desmarcados por padrão, evitando registros repetidos acidentais.
 - **Motor de Sugestão de Categorias**: Classificação automática baseada em palavras-chave da descrição (Alimentação, Transporte, Moradia, Compras, Saúde, Lazer, etc.), com possibilidade de edição direta antes da importação.
-- **Tabela de Pré-visualização e Edição Rápida**: Seleção em massa, edição inline de descrições e categorias, com cálculo em tempo real dos totais de entradas e saídas selecionadas.
+- **Tabela de Pré-visualização e Edição Rápida**: Seleção em massa, edição inline de descrições e seleção de categorias registradas, com cálculo em tempo real dos totais de entradas e saídas selecionadas.
 
 ### 5. Gestão de Carteira de Ações
 - Cadastro de ativos de renda variável pelo *Ticker*.
@@ -151,10 +157,12 @@ npm install
 ### 3. Configure o Supabase (Banco de Dados)
 1. Crie um projeto no Supabase.
 2. Acesse o **SQL Editor** no painel do Supabase.
-3. Execute o conteúdo de `supabase/migration_v3.sql` — isso cria todas as tabelas, RLS e índices.
-4. Mantenha a confirmação de e-mail habilitada em produção. Para testes locais, ela pode ser desativada temporariamente.
-5. Em **Authentication > URL Configuration**, configure a `Site URL` e autorize somente as URLs necessárias, como `http://localhost:3000/auth/callback` durante o desenvolvimento.
-6. Em **Authentication > Password**, configure a política mínima de senha e habilite a proteção contra senhas vazadas quando disponível.
+3. Em um projeto novo, execute `supabase/migration_v3.sql` para criar as tabelas iniciais. **Não execute esse arquivo em um banco existente**, pois ele remove as tabelas antigas.
+4. Execute `supabase/migrations/20261027024508_expense_categories.sql` para adicionar o catálogo de categorias, preservar e vincular as despesas existentes. Aplique essa migração antes de publicar a versão 2.4.
+5. Execute `supabase/migrations/20261027024659_expense_category_owner_index.sql` para indexar a chave estrangeira das categorias.
+6. Mantenha a confirmação de e-mail habilitada em produção. Para testes locais, ela pode ser desativada temporariamente.
+7. Em **Authentication > URL Configuration**, configure a `Site URL` e autorize somente as URLs necessárias, como `http://localhost:3000/auth/callback` durante o desenvolvimento.
+8. Em **Authentication > Password**, configure a política mínima de senha e habilite a proteção contra senhas vazadas quando disponível.
 
 ### 4. Variáveis de Ambiente
 Crie um arquivo `.env.local` na raiz:
@@ -179,7 +187,7 @@ Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
 ## 📐 Regras de Negócio Chave
 
 1. **Snapshots ≠ Transações**: Snapshots são fotos do saldo real (manual). Transações são registros de fluxo. Transações **não** criam snapshots automaticamente.
-2. **Categorias livres**: Cada transação pode ter uma categoria de texto livre definida pelo usuário.
+2. **Categorias**: Despesas usam categorias do catálogo pessoal; receitas mantêm categorias livres em texto.
 3. **Row Level Security (RLS)**: Toda query é protegida a nível de linha no Supabase.
 4. **Server Actions**: Toda mutação passa por Server Actions do Next.js 16.
 5. **Componentes reutilizáveis**: ConfirmDialog, EmptyState, FormModal, TabBar — eliminam duplicação.
