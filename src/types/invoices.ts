@@ -4,6 +4,7 @@ export interface CardInvoice {
   card_label: string
   card_last_four: string
   due_date: string
+  statement_month: string
   total_cents: number
   content_hash: string
   created_at: string
@@ -19,10 +20,12 @@ export interface CardInvoiceItem {
   card_last_four: string
   amount_cents: number
   category: string
+  category_id: string | null
   installment: number | null
   installments: number | null
 }
 
+/** Archived records from the former reconciliation model; never used in spending. */
 export interface InvoicePayment {
   id: string
   user_id: string
@@ -34,6 +37,5 @@ export interface InvoicePayment {
 export interface InvoiceData {
   invoices: CardInvoice[]
   items: CardInvoiceItem[]
-  payments: InvoicePayment[]
   available: boolean
 }

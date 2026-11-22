@@ -1,5 +1,6 @@
 'use client'
 
+import { buildStatement, isInvoicePayment } from '@/lib/statements'
 import { useState } from 'react'
 import { Download } from 'lucide-react'
 import { toast } from 'sonner'
@@ -45,7 +46,7 @@ export default function GlobalExportBtn() {
           Tipo: t.type === 'income' ? 'Receita' : 'Despesa',
           Categoria: t.category || '',
           Valor: t.amount,
-          PagamentoFaturaVinculado: data.invoiceData.payments.filter(payment => payment.transaction_id === t.id).reduce((sum, payment) => sum + payment.amount_cents, 0) / 100,
+          ForaDoExtratoGeral: t.type === 'expense' && isInvoicePayment(t.category),
           Descricao: t.description || ''
         }
       }))
@@ -53,12 +54,13 @@ export default function GlobalExportBtn() {
 
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.invoiceData.invoices), 'Faturas')
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.invoiceData.items), 'Itens_Cartão')
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.invoiceData.payments), 'Vínculos_Pagamentos')
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(buildStatement('general', data.transactions, data.invoiceData.invoices, data.invoiceData.items).map(entry => ({
+        Origem: entry.source === 'card' ? 'Cartão' : 'Banco', MesReferencia: entry.date.slice(0, 7), DataOriginal: entry.originalDate, Descricao: entry.description, Categoria: entry.category, Tipo: entry.type, Valor: entry.amount,
+      }))), 'Extrato_Geral')
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([
-        { Regra: 'Transações representam fluxo de caixa. Itens_Cartão representam consumo. Não somar essas abas.' },
-        { Regra: 'Valores com sufixo _cents estão em centavos. Os vínculos identificam a parcela do pagamento excluída do consumo.' },
-        { Regra: 'Apenas faturas importadas possuem detalhamento. Pagamentos sem vínculo podem sobrepor compras; revisar a conciliação.' },
-        { Regra: 'A data dos itens é a data informada no PDF. Em parcelas ela pode corresponder à compra original.' },
+        { Regra: 'Extrato_Geral combina banco e cartão e exclui despesas bancárias da categoria Pagamento de fatura.' },
+        { Regra: 'Compras do cartão usam statement_month; transações bancárias usam a data do lançamento.' },
+        { Regra: 'Valores _cents estão em centavos; estornos reduzem despesas. Somente faturas importadas entram no geral.' },
       ]), 'Como_Interpretar')
 
       // Sheet 4: Ações (Posições)

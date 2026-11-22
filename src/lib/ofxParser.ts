@@ -74,6 +74,9 @@ export function suggestCategory(
     return 'Outras Receitas'
   }
 
+  // Classificação sugerida; o usuário revisa antes de importar.
+  if (/pagamento.*fatura|pag\.?\s*fatura|pagamento.*cart[aã]o|fatura.*pagamento/i.test(text)) return 'Pagamento de fatura'
+
   // Expenses rules
   // Alimentação / Mercado / Restaurantes
   if (/food|ifood|aiqfome|restaurante|lanchonete|padaria|mercado|supermercado|hipermercado|acougue|açougue|hortifruti|churrascaria|pizzaria|hamburg|bar|cafe|cafeteria|subway|mcdonald|burger/i.test(text)) {

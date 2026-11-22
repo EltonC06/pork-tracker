@@ -20,6 +20,12 @@
 .heading { font-size: 1.75rem; font-weight: 800; }
 .selector { min-width: 0; width: 100%; }
 .link { color: var(--brand-400); text-decoration: underline; }
+.tabs { display: flex; gap: .5rem; border-bottom: 1px solid var(--bg-border); }
+.tab, .activeTab { flex: 1; padding: .875rem .5rem; text-align: center; font-weight: 600; color: var(--text-secondary); border-bottom: 3px solid transparent; }
+.activeTab { color: var(--brand-400); border-color: var(--brand-400); }
+.viewButton { background: transparent; border-top: 0; border-left: 0; border-right: 0; font: inherit; font-size: .875rem; font-weight: 600; cursor: pointer; }
+.grow select { margin-top: .375rem; }
+.reviewFooter { position: sticky; bottom: 0; background: var(--bg-card); padding: .75rem 0; display: flex; flex-direction: column; gap: .75rem; border-top: 1px solid var(--bg-border); }
 @media (max-width: 768px) {
   .panel { padding: 1rem; }
   .row > button { flex: 1 1 auto; justify-content: center; }

@@ -11,6 +11,7 @@ interface ExpenseCategorySelectProps {
   defaultValue?: string
   onChange?: (value: string) => void
   showManageLink?: boolean
+  disabled?: boolean
 }
 
 export default function ExpenseCategorySelect({
@@ -21,6 +22,7 @@ export default function ExpenseCategorySelect({
   defaultValue,
   onChange,
   showManageLink = true,
+  disabled = false,
 }: ExpenseCategorySelectProps) {
   const selected = value ?? defaultValue ?? ''
   const visible = categories.filter(category => category.active || category.id === selected)
@@ -28,6 +30,7 @@ export default function ExpenseCategorySelect({
   return (
     <div className="expense-category-field">
       <select
+        disabled={disabled}
         id={id}
         name={name}
         className="input"

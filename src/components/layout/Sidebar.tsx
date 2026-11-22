@@ -20,8 +20,9 @@ import {
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/dashboard/accounts', label: 'Contas', icon: Wallet },
-  { href: '/dashboard/transactions', label: 'Extrato', icon: Receipt },
-  { href: '/dashboard/invoices', label: 'Faturas', icon: CreditCard },
+  { href: '/dashboard/statement', label: 'Extrato geral', icon: Receipt },
+  { href: '/dashboard/transactions', label: 'Banco', icon: Receipt },
+  { href: '/dashboard/invoices', label: 'Cartão', icon: CreditCard },
   { href: '/dashboard/categories', label: 'Categorias', icon: Tags },
   { href: '/dashboard/planning', label: 'Resumo', icon: Calendar },
 ]
@@ -149,7 +150,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               borderRadius: '4px',
               border: '1px solid var(--bg-border)'
             }}>
-              v2.5
+              v2.6
             </span>
             
             {showVersion && (
@@ -168,14 +169,14 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 pointerEvents: 'none',
               }}>
                 <h4 style={{ fontSize: '0.75rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 600 }}>
-                  v2.5 (Atual)
+                  v2.6 (Atual)
                 </h4>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.6875rem', color: 'var(--text-secondary)' }}>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Faturas Inter em PDF, compras por categoria e conciliação com pagamentos do extrato.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Extratos separados: banco, cartão e geral, sem duplicar o pagamento da fatura.
                   </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Menu simplificado: Ações e Gráficos ocultos da navegação.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Faturas com mês de referência, categorias por seletor e gráficos de gastos.
                   </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
                     <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Categorias cadastráveis com seletor nos lançamentos e importação OFX.

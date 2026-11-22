@@ -1,5 +1,6 @@
 'use server'
 
+import { isInvoicePayment } from '@/lib/statements'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
@@ -35,6 +36,10 @@ export async function setExpenseCategoryActive(id: string, active: boolean) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Não autenticado.')
 
+  if (!active) {
+    const { data: category } = await supabase.from('expense_categories').select('name').eq('id', validId.data).eq('user_id', user.id).single()
+    if (isInvoicePayment(category?.name)) throw new Error('Pagamento de fatura precisa permanecer disponível para classificar o extrato.')
+  }
   const { data, error } = await supabase
     .from('expense_categories')
     .update({ active })

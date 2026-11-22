@@ -26,7 +26,8 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import FormModal from '@/components/ui/FormModal'
 import OfxImportModal from '@/components/ui/OfxImportModal'
 import EmptyState from '@/components/ui/EmptyState'
-import type { InvoicePayment } from '@/types/invoices'
+import StatementTabs from '@/components/invoices/StatementTabs'
+import { isInvoicePayment } from '@/lib/statements'
 import Link from 'next/link'
 import ExpenseCategorySelect from '@/components/ui/ExpenseCategorySelect'
 import type { Transaction, AccountType, ExpenseCategoryOption } from '@/types/database'
@@ -34,7 +35,6 @@ import type { Transaction, AccountType, ExpenseCategoryOption } from '@/types/da
 interface TransactionsClientProps {
   initialTransactions: Transaction[]
   accounts: AccountType[]
-  invoicePayments?: InvoicePayment[]
   categories: ExpenseCategoryOption[]
 }
 
@@ -52,7 +52,6 @@ type GroupByMode = 'day' | 'week' | 'month' | 'none'
 export default function TransactionsClient({
   initialTransactions,
   accounts,
-  invoicePayments = [],
   categories,
 }: TransactionsClientProps) {
   const [isPending, startTransition] = useTransition()
@@ -404,7 +403,7 @@ export default function TransactionsClient({
             }}>
               <Receipt size={20} />
             </div>
-            <h1 style={{ fontSize: '1.625rem', fontWeight: 800 }}>Extrato de Lançamentos</h1>
+            <h1 style={{ fontSize: '1.625rem', fontWeight: 800 }}>Extrato bancário</h1>
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
             Fluxo de caixa das contas, incluindo pagamentos de faturas. As compras do cartão ficam em Faturas.
@@ -441,9 +440,10 @@ export default function TransactionsClient({
         </div>
       </div>
 
+      <StatementTabs active="bank" />
       {/* Summary KPI Cards */}
       <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-        <Link href="/dashboard/invoices" style={{ color: 'var(--brand-400)' }}>Ver compras do cartão e conciliar faturas</Link>
+        <Link href="/dashboard/invoices" style={{ color: 'var(--brand-400)' }}>Ver extrato do cartão</Link>
       </p>
       <div style={{
         display: 'grid',
@@ -860,7 +860,7 @@ export default function TransactionsClient({
                           {/* Description */}
                           <td style={{ fontWeight: 500, color: 'var(--text-primary)' }}>
                             {tx.description || 'Sem descrição'}
-                            {invoicePayments.some(payment => payment.transaction_id === tx.id) && <div><Link href="/dashboard/invoices" className="badge badge-neutral">Pagamento de fatura vinculado</Link></div>}
+                            {tx.type === 'expense' && isInvoicePayment(categories.find(category => category.id === tx.category_id)?.name ?? tx.category) && <div><Link href="/dashboard/invoices" className="badge badge-neutral">Fora do extrato geral</Link></div>}
                           </td>
 
                           {/* Category badge */}
@@ -973,7 +973,7 @@ export default function TransactionsClient({
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
                         <span style={{ fontWeight: 600, fontSize: '0.9375rem', color: 'var(--text-primary)' }}>
                           {tx.description || 'Sem descrição'}
-                          {invoicePayments.some(payment => payment.transaction_id === tx.id) && <span className="badge badge-neutral">Pagamento de fatura vinculado</span>}
+                          {tx.type === 'expense' && isInvoicePayment(categories.find(category => category.id === tx.category_id)?.name ?? tx.category) && <span className="badge badge-neutral">Fora do extrato geral</span>}
                         </span>
                         {tx.category && (
                           <span className="badge badge-neutral" style={{ fontSize: '0.6875rem' }}>

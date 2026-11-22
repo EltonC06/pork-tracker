@@ -4,49 +4,44 @@ Um sistema pessoal completo para planejamento financeiro, focado em alta perform
 
 ## 🚀 Funcionalidades
 
-### Navegação simplificada (v2.5)
-- Menu principal: Dashboard, Contas, Extrato, Faturas, Categorias e Resumo; Configurações continua no rodapé.
-- Ações e Gráficos ficam ocultos no menu, inclusive no celular. Suas rotas, dados e cálculos existentes são preservados.
+### Extratos separados (v2.6)
 
-### Conciliação de faturas Inter (v2.5)
+- **Geral** (`/dashboard/statement`): banco + compras do cartão, excluindo despesas bancárias da categoria **Pagamento de fatura**. A exclusão é por categoria, mesmo que a fatura correspondente ainda não tenha sido importada. Os totais incluem somente compras conhecidas; classifique os pagamentos no banco e importe os PDFs de cada mês para completar o histórico.
+- **Banco** (`/dashboard/transactions`): preserva todos os lançamentos da conta, inclusive pagamentos de faturas. Contas, snapshots e fluxo de caixa continuam independentes das compras no cartão.
+- **Cartão** (`/dashboard/invoices`): faturas por mês de referência, com seletor de fatura, compras, categorias, valores, percentuais e gráficos. Não há associação de fatura a pagamento.
+- As três telas compartilham abas de navegação. Geral e Cartão abrem nos lançamentos; o controle “Análise por categoria” mostra os gráficos mantendo os filtros e totais. Ações e Gráficos continuam ocultos do menu principal.
+- Exemplo: Pix de R$20 + compras de R$180 + pagamento da fatura de R$180. Banco registra R$200 em saídas; cartão registra R$180; geral registra R$200, excluindo o pagamento classificado.
 
-Em `/dashboard/invoices`, importe o PDF textual exportado pelo Inter, revise as categorias e confirme os itens antes de salvar. O leitor foi validado com uma fatura real de nove páginas: 52 itens, duas compras parceladas e total conferido. A leitura acontece no navegador com PDF.js; o PDF original, nome do titular, endereço, boleto e número completo do cartão não são armazenados no projeto ou enviados ao servidor. Os registros revisados são salvos pela Server Action.
+#### Importação e mês de referência
 
-**Ativação no banco:** executar a migração aditiva [card_invoice_reconciliation](./supabase/migrations/20261122191752_card_invoice_reconciliation.sql) em um ambiente de teste antes da publicação. Ela depende das tabelas existentes `transactions` e `auth.users`; não executar o antigo script de clean start em um banco com dados. A migração foi testada em PostgreSQL temporário, mas isso não equivale a aplicá-la ou validá-la em produção. Sem a migração, a tela informa a indisponibilidade e desabilita a importação.
+Importe o PDF textual do Inter e revise o nome do cartão, mês, vencimento, total e categorias. As categorias usam o catálogo pessoal por dropdown, tanto na revisão quanto após salvar. Sugestões desconhecidas ficam sem categoria. A revisão tem dez itens por página. A leitura usa PDF.js localmente; o PDF e os dados pessoais do cabeçalho não são enviados ao servidor.
 
-#### Separar consumo de fluxo de caixa
+O mês sugerido é o mês com mais lançamentos no PDF, com desempate pelo mais recente. Pode ser alterado antes e depois da importação. O vencimento identifica a fatura e não determina seu mês. Uma fatura de outubro que vence em novembro pode ser classificada em outubro. Faturas antigas recebem essa mesma sugestão na migração; revise compras parceladas com data original antiga.
 
-- **Extrato bancário:** mantém a saída real do pagamento da fatura, na data do pagamento. As compras do cartão não criam novas saídas da conta nem snapshots.
-- **Consumo por categoria:** soma despesas diretas (Pix, débito etc.) e itens do cartão pela data informada no PDF. Exclui a parte explicitamente vinculada dos pagamentos de faturas desse total; o pagamento é liquidação de uma dívida. Em parcelas, a data de origem pode ser a da compra original; esta versão não distribui automaticamente valores por competência futura.
-- **Conciliação pendente:** pagamentos não vinculados continuam nas despesas diretas. A tela informa a cobertura do detalhamento e mostra total provisório quando há faturas sem pagamento vinculado ou descrições que sugerem pagamento de cartão. O usuário deve conciliar para remover a sobreposição. Nenhuma associação é confirmada apenas por coincidência de valor.
-- Exemplo: compras de R$ 100 em mercado e R$ 80 em transporte, seguidas de pagamento de R$ 180. Consumo conhecido: R$ 180; saída bancária: R$ 180. Esses indicadores não se somam. Compra em outubro paga em novembro aparece no consumo de outubro e no caixa de novembro.
+Os gráficos e o geral usam o mês de referência para todas as compras da fatura. A lista preserva a data original do PDF e a parcela atual. Só o valor da parcela lançada entra nos gastos; estornos reduzem despesas. Percentuais usam saldos positivos por categoria; categorias com saldo negativo continuam na lista, fora da pizza. O banco usa a data do lançamento.
 
-#### Modelo e integridade
+A importação é atômica: soma dos itens conferida no commit, valores em centavos, identidade única por usuário/cartão/vencimento e hash dos itens. Mesmo PDF retorna a fatura existente, sem duplicar compras ou sobrescrever categorias e mês. Conteúdo divergente é recusado. Pagamentos anteriores, ofertas de parcelamento e previsões futuras não entram como compras. PDFs digitalizados, modelos desconhecidos e composição divergente são recusados. Limites: 10 MB e 40 páginas.
 
-- Fatura: proprietário, nome do cartão, quatro últimos dígitos do cartão principal, vencimento, total declarado e hash dos itens normalizados. O vencimento identifica a fatura, sem presumir o mês pelo nome do arquivo.
-- Item: fatura, ordem de origem, data, descrição, final do cartão físico/virtual, valor em centavos, categoria e parcela atual/total. Estorno reduz consumo; pagamento anterior e ofertas de parcelamento não são compras; juros e IOF lançados são preservados.
-- Pagamentos: vínculo separado entre transação bancária e fatura, com valor alocado. Permite pagamentos parciais e múltiplos; uma transação não pode ter alocações acima do próprio valor. Importar a fatura não significa marcá-la como paga.
-- Importação atômica por RPC: chave única proprietário/final do cartão/vencimento. Mesmo conteúdo retorna a fatura existente, preservando categorias editadas. Um conteúdo diferente para essa chave é recusado; para substituir, o usuário confere a diferença e remove explicitamente o detalhamento antigo. O hash independe da ordem dos itens e das categorias; preserva a multiplicidade de compras iguais.
-- RLS, chaves estrangeiras de proprietário, soma dos itens verificada no commit e bloqueios de alocação no PostgreSQL protegem a consistência. É necessário desvincular antes de excluir um pagamento ou reduzir seu valor abaixo do alocado. As operações não alteram snapshots.
+#### Ativação no Supabase
 
-#### Fluxo de revisão
+Após as migrações de categorias e [card_invoice_reconciliation](./supabase/migrations/20261122191752_card_invoice_reconciliation.sql), execute **somente a nova** [separate_bank_card_statements](./supabase/migrations/20261122202208_separate_bank_card_statements.sql) no SQL Editor do ambiente correspondente. Não reexecute migrações já aplicadas nem scripts de clean start.
 
-1. Importar PDF, identificar o cartão e conferir vencimento e total declarado. Limites: 10 MB e 40 páginas.
-2. Revisar itens, categorias, parcelas e créditos antes de salvar. Divergência entre itens e total ou linha incompleta impede a importação. PDFs digitalizados, novos modelos, antecipações e saldos anteriores sem composição conferida precisam de suporte adicional; não são aceitos silenciosamente.
-3. Sugerir pagamentos do extrato usando conta, descrição, data e valor. Coincidência de valor sozinha nunca confirma vínculo; usuário escolhe o pagamento. Permitir importar em qualquer ordem e vincular depois.
-4. Conferir os estados não vinculada, parcial e integral, pagamentos alocados e saldo a conciliar. O pagamento histórico impresso dentro do PDF não prova a quitação da fatura atual.
-5. Desfazer vínculo preserva o extrato original. Remover detalhamento retorna à apresentação sem composição, sem excluir pagamento. Dashboard apresenta consumo e fluxo de caixa separadamente; Extrato, Contas e Resumo continuam como caixa. Excel separa faturas, itens e vínculos em abas com instruções para não somar caixa e consumo.
+A nova migração adiciona mês de referência e categoria por ID às compras. Preserva as faturas existentes, cadastra os nomes antigos no catálogo e converte os pagamentos anteriormente vinculados para a categoria **Pagamento de fatura** (o lançamento bancário completo, inclusive quando o vínculo antigo era parcial). Os vínculos ficam como histórico de leitura, deixam de bloquear alterações ou exclusão no banco e não participam mais dos cálculos. Novos vínculos são desabilitados. Pagamentos nunca vinculados precisam ser classificados pelo usuário; o OFX sugere a categoria para descrições explícitas, sempre com revisão.
 
-#### Validação local
+A tela informa indisponibilidade e desabilita importação enquanto falta a nova migração. O geral e o dashboard avisam que o total está restrito ao banco. A migração local não representa aplicação ou validação em produção. Excluir uma fatura remove suas compras do cartão e do geral, preservando o banco e sua classificação.
 
-- `npm run test:invoices`: parser e consumo com dados sintéticos (parcelas, estornos, duas compras iguais, datas inválidas, divergências e meses diferentes). Para testar um PDF real sem copiá-lo ao repositório: `node scripts/test-invoices.cjs "caminho/arquivo.pdf"`. Apenas metadados agregados são impressos.
-- `node scripts/test-invoice-db.cjs "caminho/runtime-temporario"`: usa `@electric-sql/pglite` instalado nesse diretório, fora das dependências da aplicação. Executa a migração real e testa repetição, importação divergente, rollback, alocação parcial, limites, edição, exclusão, isolamento entre usuários e acesso anônimo.
-- Verificação local: TypeScript, lint (sem erros novos) e build de produção; componentes reais em navegador isolado a 320, 360, 390, 430, 768 e 1440 px, incluindo viewport curto, leitura do PDF real, confirmação, paginação, vínculo e desvínculo, sem overflow horizontal. Testes com ações simuladas e PostgreSQL temporário não substituem a validação autenticada em um ambiente de teste da aplicação.
+#### Validação e exportação
+
+- `npm run test:invoices`: parser, parcelas, estornos, duplicatas legítimas, divergências, meses e separação dos três extratos. Aceita um PDF local com `node scripts/test-invoices.cjs "caminho/arquivo.pdf"`; imprime somente agregados.
+- `node scripts/test-statements-db.cjs "caminho/runtime-temporario"`: aplica as migrações reais em PostgreSQL temporário via `@electric-sql/pglite` instalado fora da aplicação; testa transição dos vínculos antigos, mês, catálogo, proprietário, repetição, rollback, edições e RLS.
+- `node scripts/test-invoice-db.cjs "caminho/runtime-temporario"`: teste de regressão da migração original, anterior à separação dos extratos.
+- Excel mantém banco, faturas e itens separados e acrescenta `Extrato_Geral` calculado pela mesma regra da tela, além de instruções de interpretação. Não somar abas de caixa e consumo.
+- Componentes podem ser verificados isoladamente em navegador; isso não substitui a validação autenticada com Supabase em um ambiente de teste.
 
 ### Categorias de despesas (v2.4)
 - Categorias iniciais e categorias personalizadas por usuário, selecionadas em dropdown nos lançamentos e na revisão OFX.
 - Tela `/dashboard/categories` com participação percentual no total de despesas da semana ou mês, composição em pizza, comparação em barras e evolução dos últimos 12 meses.
-- Essa tela preserva a análise de fluxo de caixa. A composição das compras do cartão e a exclusão de pagamentos conciliados do consumo ficam em Faturas, evitando misturar indicadores.
+- Essa tela preserva a análise do fluxo de caixa do banco. O Extrato geral reúne banco e cartão excluindo a categoria Pagamento de fatura; o Extrato do cartão analisa somente as faturas.
 - Categorias podem ser desativadas sem apagar o histórico. Despesas antigas são vinculadas ao catálogo pela migração aditiva.
 - Receitas mantêm suas categorias livres; os percentuais incluem somente despesas realizadas.
 

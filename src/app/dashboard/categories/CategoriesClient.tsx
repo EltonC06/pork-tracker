@@ -1,5 +1,6 @@
 'use client'
 
+import { isInvoicePayment } from '@/lib/statements'
 import { useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Plus, Tag } from 'lucide-react'
@@ -70,7 +71,7 @@ export default function CategoriesClient({ categories, expenses, todayDate }: Ca
           <span className="expense-category-eyebrow"><Tag size={15} /> Análise de gastos</span>
           <h1>Categorias de despesas</h1>
           <p className="expense-category-intro">Veja as saídas das contas por categoria e sua evolução mês a mês. Esta visão representa o fluxo de caixa.</p>
-          <p className="expense-category-intro"><Link href="/dashboard/invoices" style={{ color: 'var(--brand-400)' }}>Para analisar as compras do cartão e conciliar pagamentos, acesse Faturas.</Link></p>
+          <p className="expense-category-intro"><Link href="/dashboard/statement" style={{ color: 'var(--brand-400)' }}>Veja banco + cartão no Extrato geral ou somente compras no Extrato do cartão.</Link></p>
         </div>
       </header>
 
@@ -155,7 +156,7 @@ export default function CategoriesClient({ categories, expenses, todayDate }: Ca
                 <strong>{category.name}</strong>
                 <span>{category.is_default ? 'Inicial' : 'Personalizada'} · {category.active ? 'Ativa' : 'Inativa'}</span>
               </div>
-              <button type="button" className="btn-ghost" disabled={isPending} onClick={() => handleToggle(category)}>
+              <button type="button" className="btn-ghost" disabled={isPending || isInvoicePayment(category.name)} onClick={() => handleToggle(category)}>
                 {category.active ? 'Desativar' : 'Reativar'}
               </button>
             </div>
