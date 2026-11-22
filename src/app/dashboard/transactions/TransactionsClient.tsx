@@ -27,10 +27,13 @@ import FormModal from '@/components/ui/FormModal'
 import OfxImportModal from '@/components/ui/OfxImportModal'
 import EmptyState from '@/components/ui/EmptyState'
 import type { Transaction, AccountType } from '@/types/database'
+import type { InvoicePayment } from '@/types/invoices'
+import Link from 'next/link'
 
 interface TransactionsClientProps {
   initialTransactions: Transaction[]
   accounts: AccountType[]
+  invoicePayments?: InvoicePayment[]
 }
 
 type PeriodPreset =
@@ -47,6 +50,7 @@ type GroupByMode = 'day' | 'week' | 'month' | 'none'
 export default function TransactionsClient({
   initialTransactions,
   accounts,
+  invoicePayments = [],
 }: TransactionsClientProps) {
   const [isPending, startTransition] = useTransition()
 
@@ -399,7 +403,7 @@ export default function TransactionsClient({
             <h1 style={{ fontSize: '1.625rem', fontWeight: 800 }}>Extrato de Lançamentos</h1>
           </div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            Visão unificada e detalhada de todas as suas movimentações financeiras
+            Fluxo de caixa das contas, incluindo pagamentos de faturas. As compras do cartão ficam em Faturas.
           </p>
         </div>
 
@@ -434,6 +438,9 @@ export default function TransactionsClient({
       </div>
 
       {/* Summary KPI Cards */}
+      <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+        <Link href="/dashboard/invoices" style={{ color: 'var(--brand-400)' }}>Ver compras do cartão e conciliar faturas</Link>
+      </p>
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
@@ -849,6 +856,7 @@ export default function TransactionsClient({
                           {/* Description */}
                           <td style={{ fontWeight: 500, color: 'var(--text-primary)' }}>
                             {tx.description || 'Sem descrição'}
+                            {invoicePayments.some(payment => payment.transaction_id === tx.id) && <div><Link href="/dashboard/invoices" className="badge badge-neutral">Pagamento de fatura vinculado</Link></div>}
                           </td>
 
                           {/* Category badge */}
@@ -961,6 +969,7 @@ export default function TransactionsClient({
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
                         <span style={{ fontWeight: 600, fontSize: '0.9375rem', color: 'var(--text-primary)' }}>
                           {tx.description || 'Sem descrição'}
+                          {invoicePayments.some(payment => payment.transaction_id === tx.id) && <span className="badge badge-neutral">Pagamento de fatura vinculado</span>}
                         </span>
                         {tx.category && (
                           <span className="badge badge-neutral" style={{ fontSize: '0.6875rem' }}>

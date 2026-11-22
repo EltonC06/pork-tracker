@@ -5,6 +5,9 @@ import PatrimonyChart from '@/components/charts/PatrimonyChart'
 import KpiCard from '@/components/ui/KpiCard'
 import UpcomingPlans from '@/components/ui/UpcomingPlans'
 import type { RecurringPlan } from '@/types/database'
+import { loadInvoiceData } from '@/lib/invoiceData'
+import { loadCashTransactions } from '@/lib/cashTransactions'
+import SpendingSummary from '@/components/invoices/SpendingSummary'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -19,20 +22,24 @@ export default async function DashboardPage() {
     { data: rawSnapshots },
     { data: rawStocks },
     { data: rawPlans },
-    { data: rawMonthTxs },
+    invoiceData,
+    cashTransactions,
   ] = await Promise.all([
     db.from('account_types').select('id, name, icon, color').eq('user_id', user!.id),
     db.from('account_snapshots').select('balance, snapshot_date, account_type_id').eq('user_id', user!.id).order('snapshot_date', { ascending: true }),
     db.from('stock_positions').select('quantity, avg_price, current_price').eq('user_id', user!.id),
     db.from('recurring_plans').select('*').eq('user_id', user!.id).order('target_date', { ascending: true }),
-    db.from('transactions').select('amount, type').eq('user_id', user!.id).gte('date', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]),
+    loadInvoiceData(),
+    loadCashTransactions(),
   ])
 
   const accountTypes = (rawAccountTypes ?? []) as { id: string; name: string; icon: string | null; color: string | null }[]
   const snapshots = (rawSnapshots ?? []) as { balance: number; snapshot_date: string; account_type_id: string }[]
   const stocks = (rawStocks ?? []) as { quantity: number; avg_price: number; current_price: number | null }[]
   const plans = (rawPlans ?? []) as RecurringPlan[]
-  const monthTxs = (rawMonthTxs ?? []) as { amount: number; type: string }[]
+  const now = new Date()
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const monthTxs = cashTransactions.filter(tx => tx.date >= `${monthKey}-01` && tx.date <= `${monthKey}-31`)
 
   // Compute latest balance per account from snapshots (no loop queries)
   const accountBalances: Record<string, number> = {}
@@ -134,6 +141,9 @@ export default async function DashboardPage() {
         />
       </div>
 
+      <div style={{ marginBottom: '1.5rem' }}>
+        <SpendingSummary transactions={cashTransactions} data={invoiceData} start={`${monthKey}-01`} end={`${monthKey}-31`} />
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Patrimony Chart */}
         <div className="glass-card lg:col-span-2" style={{ padding: '1.5rem' }}>

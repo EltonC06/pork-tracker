@@ -4,6 +4,45 @@ Um sistema pessoal completo para planejamento financeiro, focado em alta perform
 
 ## 🚀 Funcionalidades
 
+### Navegação simplificada (v2.4)
+- Menu principal: Dashboard, Contas, Extrato, Faturas e Resumo; Configurações continua no rodapé.
+- Ações e Gráficos ficam ocultos no menu, inclusive no celular. Suas rotas, dados e cálculos existentes são preservados.
+
+### Conciliação de faturas Inter (v2.4)
+
+Em `/dashboard/invoices`, importe o PDF textual exportado pelo Inter, revise as categorias e confirme os itens antes de salvar. O leitor foi validado com uma fatura real de nove páginas: 52 itens, duas compras parceladas e total conferido. A leitura acontece no navegador com PDF.js; o PDF original, nome do titular, endereço, boleto e número completo do cartão não são armazenados no projeto ou enviados ao servidor. Os registros revisados são salvos pela Server Action.
+
+**Ativação no banco:** executar a migração aditiva [card_invoice_reconciliation](./supabase/migrations/20261122191752_card_invoice_reconciliation.sql) em um ambiente de teste antes da publicação. Ela depende das tabelas existentes `transactions` e `auth.users`; não executar o antigo script de clean start em um banco com dados. A migração foi testada em PostgreSQL temporário, mas isso não equivale a aplicá-la ou validá-la em produção. Sem a migração, a tela informa a indisponibilidade e desabilita a importação.
+
+#### Separar consumo de fluxo de caixa
+
+- **Extrato bancário:** mantém a saída real do pagamento da fatura, na data do pagamento. As compras do cartão não criam novas saídas da conta nem snapshots.
+- **Consumo por categoria:** soma despesas diretas (Pix, débito etc.) e itens do cartão pela data informada no PDF. Exclui a parte explicitamente vinculada dos pagamentos de faturas desse total; o pagamento é liquidação de uma dívida. Em parcelas, a data de origem pode ser a da compra original; esta versão não distribui automaticamente valores por competência futura.
+- **Conciliação pendente:** pagamentos não vinculados continuam nas despesas diretas. A tela informa a cobertura do detalhamento e mostra total provisório quando há faturas sem pagamento vinculado ou descrições que sugerem pagamento de cartão. O usuário deve conciliar para remover a sobreposição. Nenhuma associação é confirmada apenas por coincidência de valor.
+- Exemplo: compras de R$ 100 em mercado e R$ 80 em transporte, seguidas de pagamento de R$ 180. Consumo conhecido: R$ 180; saída bancária: R$ 180. Esses indicadores não se somam. Compra em outubro paga em novembro aparece no consumo de outubro e no caixa de novembro.
+
+#### Modelo e integridade
+
+- Fatura: proprietário, nome do cartão, quatro últimos dígitos do cartão principal, vencimento, total declarado e hash dos itens normalizados. O vencimento identifica a fatura, sem presumir o mês pelo nome do arquivo.
+- Item: fatura, ordem de origem, data, descrição, final do cartão físico/virtual, valor em centavos, categoria e parcela atual/total. Estorno reduz consumo; pagamento anterior e ofertas de parcelamento não são compras; juros e IOF lançados são preservados.
+- Pagamentos: vínculo separado entre transação bancária e fatura, com valor alocado. Permite pagamentos parciais e múltiplos; uma transação não pode ter alocações acima do próprio valor. Importar a fatura não significa marcá-la como paga.
+- Importação atômica por RPC: chave única proprietário/final do cartão/vencimento. Mesmo conteúdo retorna a fatura existente, preservando categorias editadas. Um conteúdo diferente para essa chave é recusado; para substituir, o usuário confere a diferença e remove explicitamente o detalhamento antigo. O hash independe da ordem dos itens e das categorias; preserva a multiplicidade de compras iguais.
+- RLS, chaves estrangeiras de proprietário, soma dos itens verificada no commit e bloqueios de alocação no PostgreSQL protegem a consistência. É necessário desvincular antes de excluir um pagamento ou reduzir seu valor abaixo do alocado. As operações não alteram snapshots.
+
+#### Fluxo de revisão
+
+1. Importar PDF, identificar o cartão e conferir vencimento e total declarado. Limites: 10 MB e 40 páginas.
+2. Revisar itens, categorias, parcelas e créditos antes de salvar. Divergência entre itens e total ou linha incompleta impede a importação. PDFs digitalizados, novos modelos, antecipações e saldos anteriores sem composição conferida precisam de suporte adicional; não são aceitos silenciosamente.
+3. Sugerir pagamentos do extrato usando conta, descrição, data e valor. Coincidência de valor sozinha nunca confirma vínculo; usuário escolhe o pagamento. Permitir importar em qualquer ordem e vincular depois.
+4. Conferir os estados não vinculada, parcial e integral, pagamentos alocados e saldo a conciliar. O pagamento histórico impresso dentro do PDF não prova a quitação da fatura atual.
+5. Desfazer vínculo preserva o extrato original. Remover detalhamento retorna à apresentação sem composição, sem excluir pagamento. Dashboard apresenta consumo e fluxo de caixa separadamente; Extrato, Contas e Resumo continuam como caixa. Excel separa faturas, itens e vínculos em abas com instruções para não somar caixa e consumo.
+
+#### Validação local
+
+- `npm run test:invoices`: parser e consumo com dados sintéticos (parcelas, estornos, duas compras iguais, datas inválidas, divergências e meses diferentes). Para testar um PDF real sem copiá-lo ao repositório: `node scripts/test-invoices.cjs "caminho/arquivo.pdf"`. Apenas metadados agregados são impressos.
+- `node scripts/test-invoice-db.cjs "caminho/runtime-temporario"`: usa `@electric-sql/pglite` instalado nesse diretório, fora das dependências da aplicação. Executa a migração real e testa repetição, importação divergente, rollback, alocação parcial, limites, edição, exclusão, isolamento entre usuários e acesso anônimo.
+- Verificação local: TypeScript, lint (sem erros novos) e build de produção; componentes reais em navegador isolado a 320, 360, 390, 430, 768 e 1440 px, incluindo viewport curto, leitura do PDF real, confirmação, paginação, vínculo e desvínculo, sem overflow horizontal. Testes com ações simuladas e PostgreSQL temporário não substituem a validação autenticada em um ambiente de teste da aplicação.
+
 ### 1. Gestão de Contas (Bancos, Cofre, Carteiras)
 - Cadastro flexível de contas com ícones e cores customizáveis.
 - **Edição** de nome, ícone e cor de contas existentes.
@@ -138,7 +177,7 @@ src/
 ## 💻 Como Rodar o Projeto Localmente
 
 ### 1. Pré-requisitos
-- Node.js versão 18+
+- Node.js 22.13+ (linha 22) para o leitor PDF.js e Next.js 16.
 - Conta no [Supabase](https://supabase.com/) (para criar o banco de dados)
 
 ### 2. Clone o repositório e instale dependências

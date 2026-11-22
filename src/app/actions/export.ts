@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import type { AccountType, AccountSnapshot, Transaction, RecurringPlan, StockPosition, StockPriceHistory } from '@/types/database'
+import { loadInvoiceData } from '@/lib/invoiceData'
+import { loadCashTransactions } from '@/lib/cashTransactions'
 
 export async function fetchAllUserData() {
   const supabase = await createClient()
@@ -14,17 +16,19 @@ export async function fetchAllUserData() {
   const [
     { data: accounts },
     { data: snapshots },
-    { data: transactions },
+    transactions,
     { data: plans },
     { data: positions },
-    { data: history }
+    { data: history },
+    invoiceData,
   ] = await Promise.all([
     db.from('account_types').select('*').eq('user_id', user.id),
     db.from('account_snapshots').select('*').eq('user_id', user.id),
-    db.from('transactions').select('*').eq('user_id', user.id),
+    loadCashTransactions(),
     db.from('recurring_plans').select('*').eq('user_id', user.id),
     db.from('stock_positions').select('*').eq('user_id', user.id),
-    db.from('stock_price_history').select('*').eq('user_id', user.id)
+    db.from('stock_price_history').select('*').eq('user_id', user.id),
+    loadInvoiceData(),
   ])
 
   return {
@@ -33,6 +37,7 @@ export async function fetchAllUserData() {
     transactions: transactions as Transaction[] || [],
     plans: plans as RecurringPlan[] || [],
     positions: positions as StockPosition[] || [],
-    history: history as StockPriceHistory[] || []
+    history: history as StockPriceHistory[] || [],
+    invoiceData,
   }
 }

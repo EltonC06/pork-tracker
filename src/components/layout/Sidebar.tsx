@@ -6,15 +6,13 @@ import { usePathname } from 'next/navigation'
 import { logout } from '@/app/actions/auth'
 import GlobalExportBtn from './GlobalExportBtn'
 import {
-  TrendingUp,
-  LayoutDashboard,
   Wallet,
   LineChart,
-  BarChart3,
   LogOut,
   Home,
   Calendar,
   Receipt,
+  CreditCard,
   Settings,
 } from 'lucide-react'
 
@@ -22,9 +20,8 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/dashboard/accounts', label: 'Contas', icon: Wallet },
   { href: '/dashboard/transactions', label: 'Extrato', icon: Receipt },
-  { href: '/dashboard/stocks', label: 'Ações', icon: TrendingUp },
+  { href: '/dashboard/invoices', label: 'Faturas', icon: CreditCard },
   { href: '/dashboard/planning', label: 'Resumo', icon: Calendar },
-  { href: '/dashboard/charts', label: 'Gráficos', icon: BarChart3 },
 ]
 
 interface SidebarProps {
@@ -150,7 +147,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               borderRadius: '4px',
               border: '1px solid var(--bg-border)'
             }}>
-              v2.3
+              v2.4
             </span>
             
             {showVersion && (
@@ -169,9 +166,15 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 pointerEvents: 'none',
               }}>
                 <h4 style={{ fontSize: '0.75rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 600 }}>
-                  v2.3 (Atual)
+                  v2.4 (Atual)
                 </h4>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.6875rem', color: 'var(--text-secondary)' }}>
+                  <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Faturas Inter em PDF, compras por categoria e conciliação com pagamentos do extrato.
+                  </li>
+                  <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Menu simplificado: Ações e Gráficos ocultos da navegação.
+                  </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
                     <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Importador de Extrato OFX: leitura e upload de arquivos bancários em lote.
                   </li>

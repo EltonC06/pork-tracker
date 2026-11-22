@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import TransactionsClient from './TransactionsClient'
 import type { Transaction, AccountType } from '@/types/database'
+import { loadCashTransactions } from '@/lib/cashTransactions'
+import { loadInvoiceData } from '@/lib/invoiceData'
 
 export const metadata = {
   title: 'Extrato de Lançamentos | Pork Tracker',
@@ -16,13 +18,9 @@ export default async function TransactionsPage() {
 
   const db = supabase as any
 
-  const [{ data: transactions }, { data: accountTypes }] = await Promise.all([
-    db
-      .from('transactions')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('date', { ascending: false })
-      .order('created_at', { ascending: false }),
+  const [transactions, invoiceData, { data: accountTypes }] = await Promise.all([
+    loadCashTransactions(),
+    loadInvoiceData(),
     db
       .from('account_types')
       .select('*')
@@ -34,6 +32,7 @@ export default async function TransactionsPage() {
     <TransactionsClient
       initialTransactions={(transactions as Transaction[]) ?? []}
       accounts={(accountTypes as AccountType[]) ?? []}
+      invoicePayments={invoiceData.payments}
     />
   )
 }

@@ -1,3 +1,12 @@
+import type { CardInvoice, CardInvoiceItem, InvoicePayment } from './invoices'
+
+type InvoiceTable<T> = {
+  Row: { [K in keyof T]: T[K] }
+  Insert: Omit<T, 'id' | 'created_at'> & { id?: string; created_at?: string }
+  Update: Partial<T>
+  Relationships: []
+}
+
 export type Json =
   | string
   | number
@@ -9,7 +18,11 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      card_invoices: InvoiceTable<CardInvoice>
+      card_invoice_items: InvoiceTable<CardInvoiceItem>
+      card_invoice_payments: InvoiceTable<InvoicePayment>
       account_types: {
+        Relationships: []
         Row: {
           id: string
           user_id: string
@@ -36,6 +49,7 @@ export interface Database {
         }
       }
       account_snapshots: {
+        Relationships: []
         Row: {
           id: string
           user_id: string
@@ -65,6 +79,7 @@ export interface Database {
         }
       }
       stock_positions: {
+        Relationships: []
         Row: {
           id: string
           user_id: string
@@ -97,6 +112,7 @@ export interface Database {
         }
       }
       stock_price_history: {
+        Relationships: []
         Row: {
           id: string
           user_id: string
@@ -123,6 +139,7 @@ export interface Database {
         }
       }
       transactions: {
+        Relationships: []
         Row: {
           id: string
           user_id: string
@@ -158,6 +175,7 @@ export interface Database {
         }
       }
       recurring_plans: {
+        Relationships: []
         Row: {
           id: string
           user_id: string
@@ -200,7 +218,10 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      import_card_invoice: {
+        Args: { p_invoice: Json; p_items: Json }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

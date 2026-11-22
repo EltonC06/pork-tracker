@@ -1,0 +1,28 @@
+.panel { padding: 1.25rem; min-width: 0; }
+.stack, .importBody { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+.importBody { max-height: 72dvh; overflow-y: auto; padding-right: .25rem; }
+.title { font-size: 1.125rem; font-weight: 700; margin-bottom: .5rem; }
+.muted { color: var(--text-secondary); font-size: .8125rem; line-height: 1.6; overflow-wrap: anywhere; }
+.notice { background: var(--bg-surface); border: 1px solid var(--warning-400); border-radius: .625rem; padding: .875rem; color: var(--warning-400); font-size: .8125rem; line-height: 1.6; overflow-wrap: anywhere; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: 1rem; margin: 1rem 0; }
+.stats dt { color: var(--text-secondary); font-size: .75rem; }
+.stats dd { color: var(--text-primary); font-size: 1.25rem; font-weight: 700; margin-top: .375rem; overflow-wrap: anywhere; }
+.categoryList { list-style: none; padding: 0; margin-top: 1rem; }
+.categoryList li, .between { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: .5rem 1rem; overflow-wrap: anywhere; }
+.categoryList li { border-top: 1px solid var(--bg-border); padding: .75rem 0; font-size: .875rem; }
+.item { border: 1px solid var(--bg-border); background: var(--bg-surface); padding: 1rem; border-radius: .75rem; display: flex; flex-direction: column; gap: .625rem; overflow-wrap: anywhere; min-width: 0; }
+.itemList { display: flex; flex-direction: column; gap: .75rem; }
+.row { display: flex; align-items: flex-end; flex-wrap: wrap; gap: .75rem; min-width: 0; }
+.grow { flex: 1 1 12rem; min-width: 0; font-size: .75rem; color: var(--text-secondary); }
+.grow input { margin-top: .375rem; }
+.check { display: flex; align-items: flex-start; gap: .75rem; font-size: .875rem; line-height: 1.5; }
+.check input { margin-top: .25rem; flex-shrink: 0; }
+.heading { font-size: 1.75rem; font-weight: 800; }
+.selector { min-width: 0; width: 100%; }
+.link { color: var(--brand-400); text-decoration: underline; }
+@media (max-width: 768px) {
+  .panel { padding: 1rem; }
+  .row > button { flex: 1 1 auto; justify-content: center; }
+  .importBody { max-height: 65dvh; }
+  .heading { font-size: 1.5rem; }
+}

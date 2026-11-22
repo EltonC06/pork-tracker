@@ -43,11 +43,23 @@ export default function GlobalExportBtn() {
           Data: new Date(t.date).toLocaleDateString(),
           Conta: account?.name || 'Desconhecida',
           Tipo: t.type === 'income' ? 'Receita' : 'Despesa',
+          Categoria: t.category || '',
           Valor: t.amount,
+          PagamentoFaturaVinculado: data.invoiceData.payments.filter(payment => payment.transaction_id === t.id).reduce((sum, payment) => sum + payment.amount_cents, 0) / 100,
           Descricao: t.description || ''
         }
       }))
       XLSX.utils.book_append_sheet(wb, txSheet, 'Transações')
+
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.invoiceData.invoices), 'Faturas')
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.invoiceData.items), 'Itens_Cartão')
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.invoiceData.payments), 'Vínculos_Pagamentos')
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([
+        { Regra: 'Transações representam fluxo de caixa. Itens_Cartão representam consumo. Não somar essas abas.' },
+        { Regra: 'Valores com sufixo _cents estão em centavos. Os vínculos identificam a parcela do pagamento excluída do consumo.' },
+        { Regra: 'Apenas faturas importadas possuem detalhamento. Pagamentos sem vínculo podem sobrepor compras; revisar a conciliação.' },
+        { Regra: 'A data dos itens é a data informada no PDF. Em parcelas ela pode corresponder à compra original.' },
+      ]), 'Como_Interpretar')
 
       // Sheet 4: Ações (Posições)
       const stocksSheet = XLSX.utils.json_to_sheet(data.positions.map(p => ({
