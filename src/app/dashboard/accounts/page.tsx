@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import AccountsClient from './AccountsClient'
-import type { AccountType, AccountSnapshot } from '@/types/database'
+import type { AccountType, AccountSnapshot, ExpenseCategoryOption } from '@/types/database'
 
 export default async function AccountsPage() {
   const supabase = await createClient()
@@ -33,12 +33,19 @@ export default async function AccountsPage() {
     .eq('user_id', user!.id)
     .order('created_at', { ascending: true })
 
+  const { data: categories } = await db
+    .from('expense_categories')
+    .select('id, name, active')
+    .eq('user_id', user!.id)
+    .order('name')
+
   return (
     <AccountsClient
       accountTypes={(accountTypes as AccountType[]) ?? []}
       snapshots={(snapshots as AccountSnapshot[]) ?? []}
       transactions={transactions ?? []}
       recurringPlans={recurringPlans ?? []}
+      categories={(categories as ExpenseCategoryOption[]) ?? []}
     />
   )
 }

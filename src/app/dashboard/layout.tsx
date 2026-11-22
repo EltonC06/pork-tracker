@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import DashboardLayoutClient from './DashboardLayoutClient'
+import type { ExpenseCategoryOption } from '@/types/database'
 
 export default async function DashboardLayout({
   children,
@@ -23,28 +24,23 @@ export default async function DashboardLayout({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
 
-  const [{ data: accountTypes }, { data: txCategories }] = await Promise.all([
+  const [{ data: accountTypes }, { data: categories }] = await Promise.all([
     db
       .from('account_types')
       .select('id, name, icon, color')
       .eq('user_id', user.id)
       .order('created_at', { ascending: true }),
     db
-      .from('transactions')
-      .select('category')
+      .from('expense_categories')
+      .select('id, name, active')
       .eq('user_id', user.id)
-      .not('category', 'is', null)
-      .limit(100),
+      .order('name'),
   ])
-
-  const distinctCategories = Array.from(
-    new Set((txCategories || []).map((t: { category: string | null }) => t.category).filter(Boolean))
-  ) as string[]
 
   return (
     <DashboardLayoutClient
       accounts={accountTypes ?? []}
-      categories={distinctCategories}
+      categories={(categories as ExpenseCategoryOption[]) ?? []}
     >
       {children}
     </DashboardLayoutClient>

@@ -328,8 +328,28 @@ body {
   padding: 2rem;
   width: 100%;
   max-width: 480px;
+  max-height: calc(100dvh - 2rem);
+  min-width: 0;
+  overflow-y: auto;
   animation: slideUp 0.25s ease;
   box-shadow: 0 25px 80px rgba(0,0,0,0.5);
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    padding: 1rem;
+  }
+  .quick-add-shortcut-hint {
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+  .quick-add-actions {
+    flex-wrap: wrap;
+  }
+  .quick-add-actions button:nth-child(2) {
+    order: 3;
+    flex: 1 1 100% !important;
+  }
 }
 
 /* Animations */
@@ -836,4 +856,74 @@ body {
   .recharts-wrapper {
     background: white !important;
   }
+}
+/* Expense category analysis */
+.expense-categories-page {
+  --category-color-0: var(--brand-400);
+  --category-color-1: var(--success-400);
+  --category-color-2: var(--warning-400);
+  --category-color-3: var(--danger-400);
+  --category-color-4: var(--brand-200);
+  --category-color-5: var(--success-600);
+  --category-color-6: var(--warning-500);
+  --category-color-7: var(--brand-700);
+  display: grid;
+  gap: 1rem;
+  width: 100%;
+  min-width: 0;
+}
+.expense-categories-page .page-header { margin-bottom: 0.25rem; }
+.expense-categories-page h1 { font-size: clamp(1.65rem, 4vw, 2.35rem); line-height: 1.18; }
+.expense-category-eyebrow { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--brand-400); font-size: 0.78rem; font-weight: 700; margin-bottom: 0.5rem; }
+.expense-category-intro { color: var(--text-secondary); max-width: 42rem; margin-top: 0.5rem; line-height: 1.5; }
+.expense-category-period { display: inline-flex; gap: 0.35rem; padding: 0.3rem; border: 1px solid var(--bg-border); border-radius: 0.85rem; background: var(--bg-surface); width: fit-content; max-width: 100%; }
+.expense-category-period button { border: 0; border-radius: 0.6rem; background: transparent; color: var(--text-secondary); padding: 0.55rem 0.85rem; min-height: 2.75rem; font: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+.expense-category-period button.active { background: var(--brand-600); color: var(--text-primary); }
+.expense-category-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr)); gap: 0.85rem; }
+.expense-category-kpis .kpi-card { display: grid; gap: 0.45rem; min-width: 0; }
+.expense-category-kpis span, .expense-category-kpis small { color: var(--text-secondary); font-size: 0.82rem; }
+.expense-category-kpis strong { font-size: clamp(1.35rem, 3vw, 1.9rem); overflow-wrap: anywhere; }
+.expense-category-section, .expense-category-chart { padding: 1.25rem; min-width: 0; }
+.expense-category-section h2, .expense-category-chart h2 { font-size: 1.05rem; }
+.expense-category-section > p, .expense-category-chart > p, .expense-category-section-heading p { color: var(--text-secondary); font-size: 0.82rem; line-height: 1.5; margin-top: 0.35rem; margin-bottom: 1rem; }
+.expense-category-list { display: grid; gap: 0.25rem; }
+.expense-category-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.35rem 1rem; padding: 0.75rem 0; border-top: 1px solid var(--bg-border); min-width: 0; }
+.expense-category-row-title { display: flex; align-items: center; gap: 0.55rem; min-width: 0; flex-wrap: wrap; }
+.expense-category-row-title strong { overflow-wrap: anywhere; }
+.expense-category-row-title > span:last-child { color: var(--text-muted); font-size: 0.75rem; }
+.expense-category-swatch { width: 0.65rem; height: 0.65rem; border-radius: 50%; flex: 0 0 auto; }
+.expense-category-swatch.color-0 { background: var(--category-color-0); }
+.expense-category-swatch.color-1 { background: var(--category-color-1); }
+.expense-category-swatch.color-2 { background: var(--category-color-2); }
+.expense-category-swatch.color-3 { background: var(--category-color-3); }
+.expense-category-swatch.color-4 { background: var(--category-color-4); }
+.expense-category-swatch.color-5 { background: var(--category-color-5); }
+.expense-category-swatch.color-6 { background: var(--category-color-6); }
+.expense-category-swatch.color-7 { background: var(--category-color-7); }
+.expense-category-row-values { display: flex; align-items: center; gap: 0.75rem; white-space: nowrap; }
+.expense-category-row-values span { color: var(--brand-400); font-weight: 700; min-width: 3.5rem; text-align: right; }
+.expense-category-progress { grid-column: 1 / -1; width: 100%; height: 0.3rem; background: var(--bg-border); border-radius: 1rem; overflow: hidden; }
+.expense-category-progress > div { height: 100%; border-radius: inherit; }
+.expense-category-chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(21rem, 100%), 1fr)); gap: 1rem; min-width: 0; }
+.expense-category-empty { color: var(--text-muted); padding: 1rem 0; }
+.expense-category-section-heading { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; }
+.expense-category-section-heading p { margin-bottom: 0; }
+.expense-category-filter { max-width: 17rem; }
+.expense-category-create { display: grid; gap: 0.5rem; margin: 1rem 0; }
+.expense-category-create > div { display: flex; gap: 0.65rem; flex-wrap: wrap; }
+.expense-category-create .input { flex: 1 1 15rem; min-width: 0; }
+.expense-category-create button { flex: 0 0 auto; }
+.expense-category-catalog { display: grid; }
+.expense-category-catalog-row { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap; border-top: 1px solid var(--bg-border); padding: 0.75rem 0; }
+.expense-category-catalog-row > div { display: grid; gap: 0.2rem; min-width: 0; }
+.expense-category-catalog-row strong { overflow-wrap: anywhere; }
+.expense-category-catalog-row span { color: var(--text-muted); font-size: 0.75rem; }
+.expense-category-field { display: grid; gap: 0.35rem; min-width: 0; }
+.expense-category-manage-link { color: var(--brand-400); font-size: 0.78rem; text-decoration: none; width: fit-content; }
+.expense-category-manage-link:hover { text-decoration: underline; }
+@media (max-width: 520px) {
+  .expense-category-section, .expense-category-chart { padding: 1rem; }
+  .expense-category-row-values { grid-column: 1 / -1; justify-content: space-between; padding-left: 1.2rem; }
+  .expense-category-filter { max-width: 100%; }
+  .expense-category-create button { width: 100%; justify-content: center; }
 }

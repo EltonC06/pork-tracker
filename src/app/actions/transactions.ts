@@ -3,12 +3,14 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { resolveExpenseCategory } from '@/lib/expense-categories'
 
 const transactionSchema = z.object({
   account_type_id: z.string().uuid().nullable().optional(),
   amount: z.coerce.number().min(0.01),
   type: z.enum(['income', 'expense']),
   category: z.string().optional(),
+  category_id: z.union([z.string().uuid(), z.literal('')]).optional(),
   date: z.string().optional(), // YYYY-MM-DD
   description: z.string().optional(),
 })
@@ -29,7 +31,10 @@ export async function createTransaction(formData: FormData) {
     throw new Error('Dados inválidos: ' + parsed.error.message)
   }
 
-  const { account_type_id, amount, type, category, date, description } = parsed.data
+  const { account_type_id, amount, type, category, category_id, date, description } = parsed.data
+  const categoryFields = type === 'expense'
+    ? await resolveExpenseCategory(supabase, user.id, category_id)
+    : { category_id: null, category: category?.trim() || null }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
@@ -41,7 +46,7 @@ export async function createTransaction(formData: FormData) {
       account_type_id: account_type_id || null,
       amount,
       type,
-      category: category || null,
+      ...categoryFields,
       date: date || new Date().toISOString().split('T')[0],
       description: description || null,
     })
@@ -52,6 +57,7 @@ export async function createTransaction(formData: FormData) {
   revalidatePath('/dashboard/transactions')
   revalidatePath('/dashboard/accounts')
   revalidatePath('/dashboard/planning')
+  revalidatePath('/dashboard/categories')
   return { success: true }
 }
 
@@ -67,14 +73,24 @@ export async function updateTransaction(id: string, formData: FormData) {
   const parsed = transactionSchema.safeParse(Object.fromEntries(formData.entries()))
   if (!parsed.success) throw new Error('Dados inválidos: ' + parsed.error.message)
 
-  const { account_type_id, amount, type, category, date, description } = parsed.data
+  const { account_type_id, amount, type, category, category_id, date, description } = parsed.data
+  const { data: existing } = await supabase
+    .from('transactions')
+    .select('category_id')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .single()
+  if (!existing) throw new Error('Transação não encontrada.')
+  const categoryFields = type === 'expense'
+    ? await resolveExpenseCategory(supabase, user.id, category_id, existing.category_id)
+    : { category_id: null, category: category?.trim() || null }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
 
   const updateData: Record<string, any> = {
     amount,
     type,
-    category: category || null,
+    ...categoryFields,
     date: date || new Date().toISOString().split('T')[0],
     description: description || null,
   }
@@ -94,6 +110,7 @@ export async function updateTransaction(id: string, formData: FormData) {
   revalidatePath('/dashboard/transactions')
   revalidatePath('/dashboard/accounts')
   revalidatePath('/dashboard/planning')
+  revalidatePath('/dashboard/categories')
   return { success: true }
 }
 
@@ -120,5 +137,6 @@ export async function deleteTransaction(id: string) {
   revalidatePath('/dashboard/transactions')
   revalidatePath('/dashboard/accounts')
   revalidatePath('/dashboard/planning')
+  revalidatePath('/dashboard/categories')
 }
 

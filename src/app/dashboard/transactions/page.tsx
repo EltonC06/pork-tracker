@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import TransactionsClient from './TransactionsClient'
-import type { Transaction, AccountType } from '@/types/database'
 import { loadCashTransactions } from '@/lib/cashTransactions'
 import { loadInvoiceData } from '@/lib/invoiceData'
+import type { Transaction, AccountType, ExpenseCategoryOption } from '@/types/database'
 
 export const metadata = {
   title: 'Extrato de Lançamentos | Pork Tracker',
@@ -18,7 +18,7 @@ export default async function TransactionsPage() {
 
   const db = supabase as any
 
-  const [transactions, invoiceData, { data: accountTypes }] = await Promise.all([
+  const [transactions, invoiceData, { data: accountTypes }, { data: categories }] = await Promise.all([
     loadCashTransactions(),
     loadInvoiceData(),
     db
@@ -26,6 +26,11 @@ export default async function TransactionsPage() {
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: true }),
+    db
+      .from('expense_categories')
+      .select('id, name, active')
+      .eq('user_id', user.id)
+      .order('name'),
   ])
 
   return (
@@ -33,6 +38,7 @@ export default async function TransactionsPage() {
       initialTransactions={(transactions as Transaction[]) ?? []}
       accounts={(accountTypes as AccountType[]) ?? []}
       invoicePayments={invoiceData.payments}
+      categories={(categories as ExpenseCategoryOption[]) ?? []}
     />
   )
 }

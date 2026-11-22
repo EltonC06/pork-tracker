@@ -5,11 +5,12 @@ import Sidebar from '@/components/layout/Sidebar'
 import MobileHeader from '@/components/layout/MobileHeader'
 
 import QuickAddFab, { type QuickAddAccount } from '@/components/ui/QuickAddFab'
+import type { ExpenseCategoryOption } from '@/types/database'
 
 interface Props {
   children: React.ReactNode
   accounts?: QuickAddAccount[]
-  categories?: string[]
+  categories?: ExpenseCategoryOption[]
 }
 
 export default function DashboardLayoutClient({ children, accounts = [], categories = [] }: Props) {
@@ -27,7 +28,7 @@ export default function DashboardLayoutClient({ children, accounts = [], categor
         </main>
       </div>
 
-      <QuickAddFab accounts={accounts} initialCategories={categories} />
+      <QuickAddFab accounts={accounts} categories={categories} />
     </div>
   )
 }

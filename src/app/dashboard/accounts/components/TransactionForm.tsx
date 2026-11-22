@@ -1,10 +1,11 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { createTransaction, updateTransaction } from '@/app/actions/transactions'
 import FormModal from '@/components/ui/FormModal'
-import type { Transaction } from '@/types/database'
+import ExpenseCategorySelect from '@/components/ui/ExpenseCategorySelect'
+import type { Transaction, ExpenseCategoryOption } from '@/types/database'
 
 interface TransactionFormProps {
   isOpen: boolean
@@ -13,6 +14,7 @@ interface TransactionFormProps {
   accountTypeId: string
   /** If provided, form is in edit mode */
   editingTransaction?: Transaction | null
+  categories: ExpenseCategoryOption[]
 }
 
 export default function TransactionForm({
@@ -21,8 +23,10 @@ export default function TransactionForm({
   accountName,
   accountTypeId,
   editingTransaction,
+  categories,
 }: TransactionFormProps) {
   const [isPending, startTransition] = useTransition()
+  const [type, setType] = useState<'expense' | 'income'>(editingTransaction?.type ?? 'expense')
   const today = new Date().toISOString().split('T')[0]
   const isEditing = !!editingTransaction
 
@@ -56,7 +60,7 @@ export default function TransactionForm({
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
           <div>
             <label className="label">Tipo</label>
-            <select name="type" className="input" required defaultValue={editingTransaction?.type ?? 'expense'}>
+            <select name="type" className="input" required value={type} onChange={event => setType(event.target.value as 'expense' | 'income')}>
               <option value="expense">Despesa (-)</option>
               <option value="income">Receita (+)</option>
             </select>
@@ -79,13 +83,11 @@ export default function TransactionForm({
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
           <div>
             <label className="label">Categoria</label>
-            <input
-              name="category"
-              type="text"
-              placeholder="ex: Alimentação, Transporte"
-              className="input"
-              defaultValue={editingTransaction?.category ?? ''}
-            />
+            {type === 'expense' ? (
+              <ExpenseCategorySelect categories={categories} defaultValue={editingTransaction?.category_id ?? ''} />
+            ) : (
+              <input name="category" type="text" placeholder="Categoria da receita (opcional)" className="input" defaultValue={editingTransaction?.type === 'income' ? editingTransaction.category ?? '' : ''} />
+            )}
           </div>
           <div>
             <label className="label">Data</label>

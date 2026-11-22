@@ -26,14 +26,16 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import FormModal from '@/components/ui/FormModal'
 import OfxImportModal from '@/components/ui/OfxImportModal'
 import EmptyState from '@/components/ui/EmptyState'
-import type { Transaction, AccountType } from '@/types/database'
 import type { InvoicePayment } from '@/types/invoices'
 import Link from 'next/link'
+import ExpenseCategorySelect from '@/components/ui/ExpenseCategorySelect'
+import type { Transaction, AccountType, ExpenseCategoryOption } from '@/types/database'
 
 interface TransactionsClientProps {
   initialTransactions: Transaction[]
   accounts: AccountType[]
   invoicePayments?: InvoicePayment[]
+  categories: ExpenseCategoryOption[]
 }
 
 type PeriodPreset =
@@ -51,6 +53,7 @@ export default function TransactionsClient({
   initialTransactions,
   accounts,
   invoicePayments = [],
+  categories,
 }: TransactionsClientProps) {
   const [isPending, startTransition] = useTransition()
 
@@ -66,6 +69,7 @@ export default function TransactionsClient({
 
   // Edit / Delete Dialog states
   const [editingTx, setEditingTx] = useState<Transaction | null>(null)
+  const [editingType, setEditingType] = useState<'expense' | 'income'>('expense')
   const [deletingTxId, setDeletingTxId] = useState<string | null>(null)
   const [isOfxModalOpen, setIsOfxModalOpen] = useState(false)
 
@@ -897,7 +901,7 @@ export default function TransactionsClient({
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.375rem' }}>
                               <button
                                 type="button"
-                                onClick={() => setEditingTx(tx)}
+                                onClick={() => { setEditingType(tx.type); setEditingTx(tx) }}
                                 title="Editar lançamento"
                                 style={{
                                   background: 'none',
@@ -999,7 +1003,7 @@ export default function TransactionsClient({
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <button
                             type="button"
-                            onClick={() => setEditingTx(tx)}
+                            onClick={() => { setEditingType(tx.type); setEditingTx(tx) }}
                             className="btn-ghost"
                             style={{ padding: '0.375rem 0.625rem', fontSize: '0.75rem' }}
                           >
@@ -1037,7 +1041,7 @@ export default function TransactionsClient({
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
               <div>
                 <label className="label">Tipo</label>
-                <select name="type" className="input" required defaultValue={editingTx.type}>
+                <select name="type" className="input" required value={editingType} onChange={event => setEditingType(event.target.value as 'expense' | 'income')}>
                   <option value="expense">Despesa (-)</option>
                   <option value="income">Receita (+)</option>
                 </select>
@@ -1088,19 +1092,11 @@ export default function TransactionsClient({
             {/* Category */}
             <div>
               <label className="label">Categoria</label>
-              <input
-                name="category"
-                type="text"
-                list="edit-modal-categories"
-                placeholder="ex: Alimentação, Transporte..."
-                className="input"
-                defaultValue={editingTx.category || ''}
-              />
-              <datalist id="edit-modal-categories">
-                {availableCategories.map(cat => (
-                  <option key={cat} value={cat} />
-                ))}
-              </datalist>
+              {editingType === 'expense' ? (
+                <ExpenseCategorySelect categories={categories} defaultValue={editingTx.category_id ?? ''} />
+              ) : (
+                <input name="category" type="text" placeholder="Categoria da receita (opcional)" className="input" defaultValue={editingTx.type === 'income' ? editingTx.category ?? '' : ''} />
+              )}
             </div>
 
             {/* Description */}
@@ -1161,6 +1157,7 @@ export default function TransactionsClient({
         onClose={() => setIsOfxModalOpen(false)}
         accounts={accounts}
         existingTransactions={initialTransactions}
+        categories={categories}
       />
     </div>
   )
