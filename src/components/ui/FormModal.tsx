@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useId, type ReactNode } from 'react'
 import { X } from 'lucide-react'
 
 interface FormModalProps {
@@ -12,6 +12,7 @@ interface FormModalProps {
 }
 
 export default function FormModal({ isOpen, onClose, title, maxWidth, children }: FormModalProps) {
+  const titleId = useId()
   // Close on Escape key
   useEffect(() => {
     if (!isOpen) return
@@ -28,15 +29,15 @@ export default function FormModal({ isOpen, onClose, title, maxWidth, children }
     <div className="modal-overlay" onClick={onClose}>
       <div
         className="modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
         style={maxWidth ? { maxWidth } : undefined}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          marginBottom: '1.5rem',
-        }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{title}</h2>
+        <div className="modal-heading">
+          <h2 id={titleId} style={{ fontSize: '1.25rem', fontWeight: 700 }}>{title}</h2>
           <button
             onClick={onClose}
             style={{

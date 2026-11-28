@@ -188,7 +188,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Importador de Extrato OFX: leitura e upload de arquivos bancários em lote.
                   </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Identificação inteligente de banco e prevenção de lançamentos duplicados.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Extrato corrigido para exibir os lançamentos no celular, com subtotais e ações acessíveis.
                   </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
                     <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Motor de sugestão automática de categorias por palavras-chave.

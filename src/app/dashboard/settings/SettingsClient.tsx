@@ -30,7 +30,7 @@ export default function SettingsClient({ email }: SettingsClientProps) {
   }
 
   return (
-    <div style={{ maxWidth: '760px', margin: '0 auto', padding: '2rem 1.5rem' }}>
+    <div className="settings-page">
       <div style={{ marginBottom: '2rem' }}>
         <p style={{ color: 'var(--brand-400)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
           Conta
@@ -65,7 +65,7 @@ export default function SettingsClient({ email }: SettingsClientProps) {
             <label className="label" htmlFor="current-password">Senha atual</label>
             <input id="current-password" name="currentPassword" type="password" className="input" autoComplete="current-password" required />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px, 100%), 1fr))', gap: '1rem' }}>
             <div>
               <label className="label" htmlFor="new-password">Nova senha</label>
               <input id="new-password" name="newPassword" type="password" className="input" autoComplete="new-password" minLength={8} required />

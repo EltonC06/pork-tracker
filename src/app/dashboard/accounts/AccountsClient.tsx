@@ -209,26 +209,26 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
                     {acctSnaps.length === 0 ? (
                       <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', textAlign: 'center' }}>Nenhum registro ainda</p>
                     ) : (
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Data</th>
-                            <th>Saldo</th>
-                            <th>Observações</th>
-                            <th style={{ width: 48 }}></th>
+                      <table className="data-table responsive-table" role="table">
+                        <thead role="rowgroup">
+                          <tr role="row">
+                            <th scope="col" role="columnheader">Data</th>
+                            <th scope="col" role="columnheader">Saldo</th>
+                            <th scope="col" role="columnheader">Observações</th>
+                            <th scope="col" role="columnheader" style={{ width: 48 }}></th>
                           </tr>
                         </thead>
-                        <tbody>
+                        <tbody role="rowgroup">
                           {[...acctSnaps].reverse().slice(0, 5).map(snap => (
-                            <tr key={snap.id}>
-                              <td>{formatDate(snap.snapshot_date)}</td>
-                              <td style={{ fontWeight: 600 }}>{formatCurrency(snap.balance)}</td>
-                              <td style={{ color: 'var(--text-muted)' }}>{snap.notes ?? '—'}</td>
-                              <td>
+                            <tr role="row" key={snap.id}>
+                              <td data-label="Data" role="cell">{formatDate(snap.snapshot_date)}</td>
+                              <td data-label="Saldo" role="cell" style={{ fontWeight: 600 }}>{formatCurrency(snap.balance)}</td>
+                              <td data-label="Observações" role="cell" style={{ color: 'var(--text-muted)' }}>{snap.notes ?? '—'}</td>
+                              <td data-label="Ações" role="cell">
                                 <button
                                   className="btn-danger"
-                                  style={{ padding: '0.25rem 0.5rem' }}
                                   aria-label="Excluir registro de saldo"
+                                  style={{ padding: '0.25rem 0.5rem' }}
                                   onClick={() => setDeleteConfirm({ type: 'snapshot', id: snap.id, label: 'este registro de saldo' })}
                                 >
                                   <Trash2 size={13} />
@@ -351,7 +351,7 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
               <label className="label">Nome da Previsão</label>
               <input name="name" type="text" placeholder="ex: Salário Mensal, Aluguel" className="input" required />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div className="form-grid">
               <div>
                 <label className="label">Tipo</label>
                 <select name="type" className="input" required defaultValue="expense">
@@ -364,7 +364,7 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
                 <input name="amount" type="number" step="0.01" min="0.01" required placeholder="0,00" className="input" />
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            <div className="form-grid">
               <div>
                 <label className="label">Frequência</label>
                 <select name="frequency" className="input" required defaultValue="monthly">

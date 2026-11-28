@@ -349,7 +349,7 @@ export default function OfxImportModal({
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))',
               gap: '0.75rem',
             }}
           >
@@ -501,29 +501,30 @@ export default function OfxImportModal({
 
           {/* Transactions Preview Table */}
           <div className="ofx-table-container">
-            <table className="data-table" style={{ width: '100%', margin: 0 }}>
-              <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--bg-surface)' }}>
-                <tr>
-                  <th style={{ width: '40px', textAlign: 'center' }}>
+            <table className="data-table responsive-table" role="table" style={{ width: '100%', margin: 0 }}>
+              <thead role="rowgroup" style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--bg-surface)' }}>
+                <tr role="row">
+                  <th scope="col" role="columnheader" style={{ width: '40px', textAlign: 'center' }}>
                     <input
                       type="checkbox"
+                      aria-label="Selecionar todos os lançamentos"
                       checked={allSelected}
                       onChange={toggleSelectAll}
                       style={{ cursor: 'pointer' }}
                     />
                   </th>
-                  <th style={{ width: '95px' }}>Data</th>
-                  <th>Descrição</th>
-                  <th style={{ width: '150px' }}>Categoria</th>
-                  <th style={{ width: '130px', textAlign: 'right' }}>Valor</th>
-                  <th style={{ width: '100px', textAlign: 'center' }}>Status</th>
+                  <th scope="col" role="columnheader" style={{ width: '95px' }}>Data</th>
+                  <th scope="col" role="columnheader">Descrição</th>
+                  <th scope="col" role="columnheader" style={{ width: '150px' }}>Categoria</th>
+                  <th scope="col" role="columnheader" style={{ width: '130px', textAlign: 'right' }}>Valor</th>
+                  <th scope="col" role="columnheader" style={{ width: '100px', textAlign: 'center' }}>Status</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody role="rowgroup">
                 {items.map((tx) => {
                   const isIncome = tx.type === 'income'
                   return (
-                    <tr
+                    <tr role="row"
                       key={tx.id}
                       style={{
                         background: tx.selected ? undefined : 'rgba(0,0,0,0.15)',
@@ -531,9 +532,10 @@ export default function OfxImportModal({
                       }}
                     >
                       {/* Checkbox */}
-                      <td style={{ textAlign: 'center' }}>
+                      <td data-label="Selecionar" role="cell" style={{ textAlign: 'center' }}>
                         <input
                           type="checkbox"
+                          aria-label={`Selecionar lançamento: ${tx.description}`}
                           checked={tx.selected}
                           onChange={() => toggleItem(tx.id)}
                           style={{ cursor: 'pointer' }}
@@ -541,7 +543,7 @@ export default function OfxImportModal({
                       </td>
 
                       {/* Date */}
-                      <td
+                      <td data-label="Data" role="cell"
                         style={{
                           fontSize: '0.75rem',
                           color: 'var(--text-secondary)',
@@ -552,9 +554,10 @@ export default function OfxImportModal({
                       </td>
 
                       {/* Description (inline editable) */}
-                      <td>
+                      <td data-label="Descrição" role="cell">
                         <input
                           type="text"
+                          aria-label="Descrição do lançamento"
                           value={tx.description}
                           onChange={(e) => updateDescription(tx.id, e.target.value)}
                           className="input"
@@ -577,7 +580,7 @@ export default function OfxImportModal({
                       </td>
 
                       {/* Category (inline editable) */}
-                      <td>
+                      <td data-label="Categoria" role="cell">
                         {tx.type === 'expense' ? (
                           <select
                             value={tx.suggestedCategory}
@@ -596,7 +599,7 @@ export default function OfxImportModal({
                       </td>
 
                       {/* Amount */}
-                      <td
+                      <td data-label="Valor" role="cell"
                         style={{
                           textAlign: 'right',
                           fontWeight: 700,
@@ -610,7 +613,7 @@ export default function OfxImportModal({
                       </td>
 
                       {/* Status */}
-                      <td style={{ textAlign: 'center' }}>
+                      <td data-label="Status" role="cell" style={{ textAlign: 'center' }}>
                         {tx.isDuplicate ? (
                           <span className="badge-duplicate">Duplicata?</span>
                         ) : (
