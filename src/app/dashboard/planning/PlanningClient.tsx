@@ -108,19 +108,19 @@ export default function PlanningClient({ accountTypes, snapshots, recurringPlans
   return (
     <div ref={contentRef}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="page-header">
         <div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: '800', marginBottom: '0.25rem' }}>Resumo Financeiro</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             Transações realizadas + projeção dos próximos 12 meses
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="page-actions">
           <select 
             className="input" 
             value={selectedAccountId} 
             onChange={e => setSelectedAccountId(e.target.value)}
-            style={{ minWidth: '200px' }}
+
           >
             <option value="all">Todas as Contas (Patrimônio Global)</option>
             {accountTypes.map(acct => (
@@ -144,7 +144,7 @@ export default function PlanningClient({ accountTypes, snapshots, recurringPlans
         ) : (
           <>
             {/* Summary row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(160px, 100%), 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
               <div style={{ padding: '1rem', background: 'rgba(16,185,129,0.08)', borderRadius: '10px', border: '1px solid rgba(16,185,129,0.15)' }}>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Receitas</p>
                 <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--success-400)' }}>{formatCurrency(monthIncome)}</p>
@@ -163,20 +163,20 @@ export default function PlanningClient({ accountTypes, snapshots, recurringPlans
 
             {/* Recent transactions list */}
             <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Data</th>
-                    <th>Tipo</th>
-                    <th>Descrição</th>
-                    <th>Valor</th>
+              <table className="data-table responsive-table" role="table">
+                <thead role="rowgroup">
+                  <tr role="row">
+                    <th scope="col" role="columnheader">Data</th>
+                    <th scope="col" role="columnheader">Tipo</th>
+                    <th scope="col" role="columnheader">Descrição</th>
+                    <th scope="col" role="columnheader">Valor</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody role="rowgroup">
                   {monthTransactions.slice(0, 8).map(tx => (
-                    <tr key={tx.id}>
-                      <td style={{ fontSize: '0.8125rem' }}>{formatDate(tx.date)}</td>
-                      <td>
+                    <tr role="row" key={tx.id}>
+                      <td data-label="Data" role="cell" style={{ fontSize: '0.8125rem' }}>{formatDate(tx.date)}</td>
+                      <td data-label="Tipo" role="cell">
                         {tx.type === 'income' ? (
                           <span style={{ color: 'var(--success-400)', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', fontWeight: 600 }}>
                             <ArrowUpRight size={13} /> Receita
@@ -187,8 +187,8 @@ export default function PlanningClient({ accountTypes, snapshots, recurringPlans
                           </span>
                         )}
                       </td>
-                      <td style={{ fontSize: '0.8125rem' }}>{tx.description || tx.category || '—'}</td>
-                      <td style={{ fontWeight: 700, color: tx.type === 'income' ? 'var(--success-400)' : 'var(--text-primary)', fontSize: '0.875rem' }}>
+                      <td data-label="Descrição" role="cell" style={{ fontSize: '0.8125rem' }}>{tx.description || tx.category || '—'}</td>
+                      <td data-label="Valor" role="cell" style={{ fontWeight: 700, color: tx.type === 'income' ? 'var(--success-400)' : 'var(--text-primary)', fontSize: '0.875rem' }}>
                         {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
                       </td>
                     </tr>
@@ -201,9 +201,9 @@ export default function PlanningClient({ accountTypes, snapshots, recurringPlans
       </div>
 
       {/* Projection Chart */}
-      <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.25rem', height: '400px' }}>
+      <div className="glass-card projection-chart">
         <h2 style={{ fontSize: '1.0625rem', fontWeight: '700', marginBottom: '1.5rem' }}>Projeção de Saldo (12 meses)</h2>
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={300} minWidth={0}>
           <AreaChart data={projectionData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="colorSaldo" x1="0" y1="0" x2="0" y2="1">
@@ -236,26 +236,26 @@ export default function PlanningClient({ accountTypes, snapshots, recurringPlans
       <div className="glass-card" style={{ padding: '1.5rem' }}>
         <h2 style={{ fontSize: '1.0625rem', fontWeight: '700', marginBottom: '1.5rem' }}>Detalhamento Mensal (Projeção)</h2>
         <div style={{ overflowX: 'auto' }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Mês</th>
-                <th>Receitas Previstas</th>
-                <th>Despesas Previstas</th>
-                <th>Resultado do Mês</th>
-                <th>Saldo Acumulado</th>
+          <table className="data-table responsive-table" role="table">
+            <thead role="rowgroup">
+              <tr role="row">
+                <th scope="col" role="columnheader">Mês</th>
+                <th scope="col" role="columnheader">Receitas Previstas</th>
+                <th scope="col" role="columnheader">Despesas Previstas</th>
+                <th scope="col" role="columnheader">Resultado do Mês</th>
+                <th scope="col" role="columnheader">Saldo Acumulado</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody role="rowgroup">
               {projectionData.map((row, i) => {
                 const monthResult = row.receitas - row.despesas
                 const isPositive = monthResult >= 0
                 return (
-                  <tr key={i}>
-                    <td style={{ fontWeight: 600 }}>{row.monthLabel}</td>
-                    <td style={{ color: 'var(--success-400)' }}>{formatCurrency(row.receitas)}</td>
-                    <td style={{ color: 'var(--danger-400)' }}>{formatCurrency(row.despesas)}</td>
-                    <td>
+                  <tr role="row" key={i}>
+                    <td data-label="Mês" role="cell" style={{ fontWeight: 600 }}>{row.monthLabel}</td>
+                    <td data-label="Receitas previstas" role="cell" style={{ color: 'var(--success-400)' }}>{formatCurrency(row.receitas)}</td>
+                    <td data-label="Despesas previstas" role="cell" style={{ color: 'var(--danger-400)' }}>{formatCurrency(row.despesas)}</td>
+                    <td data-label="Resultado do mês" role="cell">
                       <span style={{ 
                         color: isPositive ? 'var(--success-400)' : 'var(--danger-400)',
                         fontWeight: 600 
@@ -263,7 +263,7 @@ export default function PlanningClient({ accountTypes, snapshots, recurringPlans
                         {isPositive ? '+' : ''}{formatCurrency(monthResult)}
                       </span>
                     </td>
-                    <td style={{ fontWeight: 700, fontSize: '1.0625rem' }}>
+                    <td data-label="Saldo acumulado" role="cell" style={{ fontWeight: 700, fontSize: '1.0625rem' }}>
                       {formatCurrency(row.saldo)}
                     </td>
                   </tr>

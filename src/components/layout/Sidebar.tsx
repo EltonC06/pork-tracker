@@ -150,7 +150,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               borderRadius: '4px',
               border: '1px solid var(--bg-border)'
             }}>
-              v2.6
+              v2.7
             </span>
             
             {showVersion && (
@@ -169,9 +169,12 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 pointerEvents: 'none',
               }}>
                 <h4 style={{ fontSize: '0.75rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 600 }}>
-                  v2.6 (Atual)
+                  v2.7 (Atual)
                 </h4>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.6875rem', color: 'var(--text-secondary)' }}>
+                  <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Layout responsivo com históricos em cards, filtros adaptáveis e modais com rolagem no celular.
+                  </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
                     <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Extratos separados: banco, cartão e geral, sem duplicar o pagamento da fatura.
                   </li>
@@ -188,7 +191,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Importador de Extrato OFX: leitura e upload de arquivos bancários em lote.
                   </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Identificação inteligente de banco e prevenção de lançamentos duplicados.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Extrato corrigido para exibir os lançamentos no celular, com subtotais e ações acessíveis.
                   </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
                     <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Motor de sugestão automática de categorias por palavras-chave.

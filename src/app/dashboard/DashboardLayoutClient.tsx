@@ -17,13 +17,13 @@ export default function DashboardLayoutClient({ children, accounts = [], categor
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
+    <div className="dashboard-shell">
       <MobileHeader onMenuClick={() => setIsSidebarOpen(true)} />
       
-      <div style={{ display: 'flex', flex: 1, position: 'relative' }}>
+      <div className="dashboard-body">
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
         
-        <main className="main-content" style={{ flex: 1, width: '100%' }}>
+        <main className="main-content">
           {children}
         </main>
       </div>

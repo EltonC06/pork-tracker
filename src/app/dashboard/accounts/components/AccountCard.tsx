@@ -49,9 +49,9 @@ export default function AccountCard({
 
   return (
     <>
-      <div className="glass-card" style={{ padding: '1.5rem' }}>
+      <div className="glass-card account-card">
         {/* Card Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div className="account-heading">
           <div style={{
             width: '48px', height: '48px',
             background: `${account.color ?? '#6366f1'}22`,
@@ -62,7 +62,7 @@ export default function AccountCard({
           }}>
             {account.icon ?? '💰'}
           </div>
-          <div style={{ flex: 1 }}>
+          <div className="account-identity">
             <h3 style={{ fontWeight: 700, fontSize: '1.0625rem' }}>{account.name}</h3>
             {latestBalance ? (
               <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
@@ -72,7 +72,7 @@ export default function AccountCard({
               <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>Sem registros ainda</p>
             )}
           </div>
-          <div style={{ textAlign: 'right' }}>
+          <div className="account-balance">
             <p style={{ fontSize: '1.375rem', fontWeight: '800' }}>
               {latestBalance ? formatCurrency(latestBalance.balance) : '—'}
             </p>
@@ -80,7 +80,7 @@ export default function AccountCard({
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '1.25rem', gap: '1rem' }}>
+        <div className="account-actions">
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', flex: 1 }}>
             <button
               className="btn-primary"
