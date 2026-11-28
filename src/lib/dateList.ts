@@ -65,4 +65,3 @@ export function paginateItems<T>(items: T[], page: number, size = 20) {
   const currentPage = Math.max(0, Math.min(page, pageCount - 1))
   return { items: items.slice(currentPage * size, (currentPage + 1) * size), page: currentPage, pageCount }
 }
-

@@ -14,7 +14,8 @@ export default function useDialogFocus(isOpen: boolean) {
     const dialog = dialogRef.current
     if (!dialog) return
     const focusable = () => [...dialog.querySelectorAll<HTMLElement>(focusableSelector)].filter(element => element.getClientRects().length > 0)
-    const initial = dialog.querySelector<HTMLElement>('input:not([type="hidden"]):not(:disabled), select:not(:disabled), textarea:not(:disabled)') ?? focusable()[0] ?? dialog
+    const visible = focusable()
+    const initial = visible.find(element => element.matches('input:not([type="hidden"]), select, textarea')) ?? visible[0] ?? dialog
     initial.focus()
 
     function trapFocus(event: KeyboardEvent) {
