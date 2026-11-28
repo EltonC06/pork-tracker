@@ -18,6 +18,10 @@ A branch de atualização preserva o trabalho local anterior de reembolsos, iden
 
 Esta rodada termina em PR e verificação do preview. Merge, deploy de produção e migrações remotas exigem autorização separada.
 
+Verificações da atualização: `npm run type-check`, `npm run lint`, `npm run build`, `npm run test:invoices` e `npm run test:lists`. O último cobre seleção de cartões/faturas, limites de período, busca, ordenação, créditos e subtotais dos grupos na página visível. O total filtrado e o total da página são apresentados separadamente. Os testes de banco em `scripts/test-*-db.cjs` usam um runtime PostgreSQL isolado e dados sintéticos; não devem ser apontados para o banco remoto.
+
+A verificação mobile usa os componentes reais com fixtures sintéticas em rota temporária, removida antes da entrega: Contas, Geral, Faturas e Movimentações em 320, 375, 430, 767, 769 e 1280 pixels, nos temas Claro e Escuro (48 combinações sem overflow global). Foram exercitados expansão/abas por teclado, seleção e filtros, tema Sistema e persistência após recarregar, foco dos modais e alvos de toque. Isso não substitui teste autenticado com dados reais nem teste em aparelho físico.
+
 ### Extratos e navegação (v2.7)
 
 - **Geral** (`/dashboard/statement`): banco + compras do cartão, excluindo pagamentos bancários reconhecidos pela categoria **Pagamento de fatura**, pelo nome legado **Fatura** ou por descrição explícita de pagamento da fatura/cartão. A exclusão independe de vínculo, coincidência de valor ou PDF já importado. Os totais incluem somente compras conhecidas; classifique os pagamentos no banco e importe os PDFs de cada mês para completar o histórico.

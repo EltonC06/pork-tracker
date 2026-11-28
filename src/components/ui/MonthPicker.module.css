@@ -10,3 +10,6 @@
 .today { border: 0; background: transparent; padding: .5rem 0 0; color: var(--brand-400); font-size: .75rem; cursor: pointer; }
 .today:disabled, .arrow:disabled { color: var(--text-muted); cursor: default; }
 @media (max-width: 380px) { .controls { gap: .25rem; align-items: center; } .arrow { width: 2rem; } .fields { grid-template-columns: minmax(0, 1fr); } .fields select { padding-left: .5rem; padding-right: .25rem; font-size: .8125rem; } }
+
+/* Keep month navigation usable with touch at compact widths. */
+.arrow, .today { min-width: 2.75rem; min-height: 2.75rem; }

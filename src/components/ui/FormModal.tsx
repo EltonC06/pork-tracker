@@ -2,6 +2,7 @@
 
 import { useEffect, useId, type ReactNode } from 'react'
 import { X } from 'lucide-react'
+import useDialogFocus from './useDialogFocus'
 
 interface FormModalProps {
   isOpen: boolean
@@ -13,6 +14,7 @@ interface FormModalProps {
 
 export default function FormModal({ isOpen, onClose, title, maxWidth, children }: FormModalProps) {
   const titleId = useId()
+  const dialogRef = useDialogFocus(isOpen)
   // Close on Escape key
   useEffect(() => {
     if (!isOpen) return
@@ -29,6 +31,8 @@ export default function FormModal({ isOpen, onClose, title, maxWidth, children }
     <div className="modal-overlay" onClick={onClose}>
       <div
         className="modal-content"
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

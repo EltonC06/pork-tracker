@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { logout } from '@/app/actions/auth'
 import GlobalExportBtn from './GlobalExportBtn'
+import ThemePreference from '@/components/theme/ThemePreference'
 import {
   Wallet,
   LineChart,
@@ -110,6 +111,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         gap: '0.5rem',
       }}>
         
+        <ThemePreference />
         <GlobalExportBtn />
 
         <Link

@@ -12,6 +12,7 @@
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
     "test:invoices": "node scripts/test-invoices.cjs",
+    "test:lists": "node scripts/test-date-list.cjs",
     "prepare": "husky"
   },
   "dependencies": {
