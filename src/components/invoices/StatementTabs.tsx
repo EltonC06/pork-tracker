@@ -6,8 +6,8 @@ export default function StatementTabs({ active }: { active: StatementSource }) {
   return <nav className={styles.tabs} aria-label="Extratos">
     {([
       ['general', '/dashboard/statement', 'Geral'],
-      ['bank', '/dashboard/transactions', 'Banco'],
-      ['card', '/dashboard/invoices', 'Cartão'],
+      ['bank', '/dashboard/transactions', 'Movimentações'],
+      ['card', '/dashboard/invoices', 'Faturas'],
     ] as const).map(([key, href, label]) => <Link key={key} href={href} aria-current={active === key ? 'page' : undefined} className={active === key ? styles.activeTab : styles.tab}>{label}</Link>)}
   </nav>
 }

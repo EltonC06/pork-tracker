@@ -53,7 +53,7 @@ export async function createTransaction(formData: FormData) {
 
   if (error) throw new Error('Erro ao salvar transação: ' + error.message)
 
-  revalidatePath('/dashboard')
+  revalidatePath('/dashboard', 'layout')
   revalidatePath('/dashboard/transactions')
   revalidatePath('/dashboard/accounts')
   revalidatePath('/dashboard/planning')
@@ -106,7 +106,7 @@ export async function updateTransaction(id: string, formData: FormData) {
 
   if (error) throw new Error('Erro ao atualizar transação: ' + error.message)
 
-  revalidatePath('/dashboard')
+  revalidatePath('/dashboard', 'layout')
   revalidatePath('/dashboard/transactions')
   revalidatePath('/dashboard/accounts')
   revalidatePath('/dashboard/planning')
@@ -133,7 +133,7 @@ export async function deleteTransaction(id: string) {
 
   if (error) throw new Error(error.message)
 
-  revalidatePath('/dashboard')
+  revalidatePath('/dashboard', 'layout')
   revalidatePath('/dashboard/transactions')
   revalidatePath('/dashboard/accounts')
   revalidatePath('/dashboard/planning')

@@ -4,6 +4,7 @@
 .title { font-size: 1.125rem; font-weight: 700; margin-bottom: .5rem; }
 .muted { color: var(--text-secondary); font-size: .8125rem; line-height: 1.6; overflow-wrap: anywhere; }
 .notice { background: var(--bg-surface); border: 1px solid var(--warning-400); border-radius: .625rem; padding: .875rem; color: var(--warning-400); font-size: .8125rem; line-height: 1.6; overflow-wrap: anywhere; }
+.late { color: var(--warning-400); font-size: .8125rem; font-weight: 600; }
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: 1rem; margin: 1rem 0; }
 .stats dt { color: var(--text-secondary); font-size: .75rem; }
 .stats dd { color: var(--text-primary); font-size: 1.25rem; font-weight: 700; margin-top: .375rem; overflow-wrap: anywhere; }

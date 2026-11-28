@@ -1,0 +1,9 @@
+.spending { display: grid; gap: 1rem; padding: 1.5rem; min-width: 0; }
+.heading { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: .75rem; }
+.heading h2 { font-size: 1.125rem; font-weight: 700; }
+.spending p, .breakdown dt { color: var(--text-secondary); font-size: .8125rem; line-height: 1.6; }
+.amount { font-size: clamp(2rem, 7vw, 3rem); line-height: 1.15; font-weight: 800; overflow-wrap: anywhere; color: var(--text-primary); }
+.breakdown { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: 1rem; border-block: 1px solid var(--bg-border); padding-block: 1rem; }
+.breakdown dd { margin-top: .25rem; font-weight: 700; overflow-wrap: anywhere; }
+.link { color: var(--brand-400); font-size: .875rem; text-decoration: underline; width: fit-content; }
+@media (max-width: 768px) { .spending { padding: 1rem; } }

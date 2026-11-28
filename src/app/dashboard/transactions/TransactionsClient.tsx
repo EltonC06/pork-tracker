@@ -3,9 +3,7 @@
 import { useState, useMemo, useTransition } from 'react'
 import {
   Receipt,
-  Search,
   Filter,
-  X,
   Plus,
   ArrowDownLeft,
   ArrowUpRight,
@@ -26,9 +24,15 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import FormModal from '@/components/ui/FormModal'
 import OfxImportModal from '@/components/ui/OfxImportModal'
 import EmptyState from '@/components/ui/EmptyState'
+import MonthPicker from '@/components/ui/MonthPicker'
+import ReimbursementBadge from '@/components/ui/ReimbursementBadge'
+import { reimbursementFor } from '@/lib/reimbursements'
+import type { Reimbursement } from '@/types/reimbursements'
+import { currentMonth as getCurrentMonth } from '@/lib/months'
+import DateListControls from '@/components/ui/DateListControls'
+import { periodRange, matchesListSearch, sortDateItems, groupDateItems, type PeriodPreset, type GroupByMode, type ListOrder } from '@/lib/dateList'
 import StatementTabs from '@/components/invoices/StatementTabs'
-import { isInvoicePayment } from '@/lib/statements'
-import Link from 'next/link'
+import { isInvoicePaymentTransaction } from '@/lib/statements'
 import ExpenseCategorySelect from '@/components/ui/ExpenseCategorySelect'
 import type { Transaction, AccountType, ExpenseCategoryOption } from '@/types/database'
 
@@ -36,23 +40,14 @@ interface TransactionsClientProps {
   initialTransactions: Transaction[]
   accounts: AccountType[]
   categories: ExpenseCategoryOption[]
+  reimbursements?: Reimbursement[]
 }
-
-type PeriodPreset =
-  | 'this_month'
-  | 'last_month'
-  | 'last_30_days'
-  | 'last_90_days'
-  | 'this_year'
-  | 'all'
-  | 'custom'
-
-type GroupByMode = 'day' | 'week' | 'month' | 'none'
 
 export default function TransactionsClient({
   initialTransactions,
   accounts,
   categories,
+  reimbursements = [],
 }: TransactionsClientProps) {
   const [isPending, startTransition] = useTransition()
 
@@ -61,10 +56,12 @@ export default function TransactionsClient({
   const [selectedAccountId, setSelectedAccountId] = useState<string>('all')
   const [selectedType, setSelectedType] = useState<'all' | 'expense' | 'income'>('all')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [periodPreset, setPeriodPreset] = useState<PeriodPreset>('this_month')
+  const [periodPreset, setPeriodPreset] = useState<PeriodPreset>('month')
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth)
   const [customStartDate, setCustomStartDate] = useState('')
   const [customEndDate, setCustomEndDate] = useState('')
   const [groupBy, setGroupBy] = useState<GroupByMode>('day')
+  const [order, setOrder] = useState<ListOrder>('date_desc')
 
   // Edit / Delete Dialog states
   const [editingTx, setEditingTx] = useState<Transaction | null>(null)
@@ -92,69 +89,11 @@ export default function TransactionsClient({
     return Array.from(set).sort((a, b) => a.localeCompare(b))
   }, [initialTransactions])
 
-  // Date range calculation for period filters
-  const dateRange = useMemo(() => {
-    const now = new Date()
-    const currentYear = now.getFullYear()
-    const currentMonth = now.getMonth() // 0-indexed
-
-    if (periodPreset === 'this_month') {
-      const start = new Date(currentYear, currentMonth, 1)
-      const end = new Date(currentYear, currentMonth + 1, 0)
-      return {
-        start: start.toISOString().split('T')[0],
-        end: end.toISOString().split('T')[0],
-      }
-    }
-
-    if (periodPreset === 'last_month') {
-      const start = new Date(currentYear, currentMonth - 1, 1)
-      const end = new Date(currentYear, currentMonth, 0)
-      return {
-        start: start.toISOString().split('T')[0],
-        end: end.toISOString().split('T')[0],
-      }
-    }
-
-    if (periodPreset === 'last_30_days') {
-      const start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-      return {
-        start: start.toISOString().split('T')[0],
-        end: now.toISOString().split('T')[0],
-      }
-    }
-
-    if (periodPreset === 'last_90_days') {
-      const start = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
-      return {
-        start: start.toISOString().split('T')[0],
-        end: now.toISOString().split('T')[0],
-      }
-    }
-
-    if (periodPreset === 'this_year') {
-      const start = new Date(currentYear, 0, 1)
-      const end = new Date(currentYear, 11, 31)
-      return {
-        start: start.toISOString().split('T')[0],
-        end: end.toISOString().split('T')[0],
-      }
-    }
-
-    if (periodPreset === 'custom') {
-      return {
-        start: customStartDate || '1970-01-01',
-        end: customEndDate || '2099-12-31',
-      }
-    }
-
-    // 'all'
-    return { start: '1970-01-01', end: '2099-12-31' }
-  }, [periodPreset, customStartDate, customEndDate])
+  const dateRange = useMemo(() => periodRange(periodPreset, selectedMonth, customStartDate, customEndDate), [periodPreset, selectedMonth, customStartDate, customEndDate])
 
   // Filtered transactions
   const filteredTransactions = useMemo(() => {
-    return initialTransactions.filter(tx => {
+    return sortDateItems(initialTransactions.filter(tx => {
       // Date filter
       if (tx.date < dateRange.start || tx.date > dateRange.end) {
         return false
@@ -181,21 +120,10 @@ export default function TransactionsClient({
         }
       }
 
-      // Search query
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase().trim()
-        const descMatch = (tx.description || '').toLowerCase().includes(query)
-        const catMatch = (tx.category || '').toLowerCase().includes(query)
-        const accountName = tx.account_type_id ? accountsMap.get(tx.account_type_id)?.name.toLowerCase() || '' : ''
-        const accMatch = accountName.includes(query)
-
-        if (!descMatch && !catMatch && !accMatch) {
-          return false
-        }
-      }
+      if (!matchesListSearch(searchQuery, tx.description, tx.category, tx.account_type_id ? accountsMap.get(tx.account_type_id)?.name : '')) return false
 
       return true
-    })
+    }), order, tx => Number(tx.amount))
   }, [
     initialTransactions,
     dateRange,
@@ -204,6 +132,7 @@ export default function TransactionsClient({
     selectedCategory,
     searchQuery,
     accountsMap,
+    order,
   ])
 
   // KPI calculations on filtered items
@@ -226,123 +155,23 @@ export default function TransactionsClient({
     }
   }, [filteredTransactions])
 
-  const hasActiveFilters =
-    searchQuery !== '' ||
-    selectedAccountId !== 'all' ||
-    selectedType !== 'all' ||
-    selectedCategory !== 'all' ||
-    periodPreset !== 'this_month'
-
   const handleClearFilters = () => {
+    setOrder('date_desc')
     setSearchQuery('')
     setSelectedAccountId('all')
     setSelectedType('all')
     setSelectedCategory('all')
-    setPeriodPreset('this_month')
+    setPeriodPreset('month')
+    setSelectedMonth(getCurrentMonth())
     setCustomStartDate('')
     setCustomEndDate('')
   }
 
-  // Grouping helper functions
-  const groupedSections = useMemo(() => {
-    if (groupBy === 'none') {
-      return [
-        {
-          key: 'all',
-          title: 'Todas as Transações',
-          items: filteredTransactions,
-          income: kpis.income,
-          expense: kpis.expense,
-          net: kpis.net,
-        },
-      ]
-    }
-
-    const groups = new Map<
-      string,
-      {
-        key: string
-        title: string
-        sortKey: string
-        items: Transaction[]
-        income: number
-        expense: number
-        net: number
-      }
-    >()
-
-    const today = new Date()
-    const todayStr = today.toISOString().split('T')[0]
-    const yesterday = new Date(today)
-    yesterday.setDate(today.getDate() - 1)
-    const yesterdayStr = yesterday.toISOString().split('T')[0]
-
-    for (const tx of filteredTransactions) {
-      let groupKey = ''
-      let groupTitle = ''
-      let sortKey = ''
-
-      if (groupBy === 'day') {
-        groupKey = tx.date
-        sortKey = tx.date
-        if (tx.date === todayStr) {
-          groupTitle = `Hoje, ${formatDate(tx.date)}`
-        } else if (tx.date === yesterdayStr) {
-          groupTitle = `Ontem, ${formatDate(tx.date)}`
-        } else {
-          // Format e.g. "Sexta-feira, 05/09/2026"
-          const dateObj = new Date(tx.date + 'T12:00:00')
-          const weekday = new Intl.DateTimeFormat('pt-BR', { weekday: 'long' }).format(dateObj)
-          const capitalizedWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1)
-          groupTitle = `${capitalizedWeekday}, ${formatDate(tx.date)}`
-        }
-      } else if (groupBy === 'week') {
-        const dateObj = new Date(tx.date + 'T12:00:00')
-        const dayOfWeek = dateObj.getDay() // 0 = Sunday
-        const diffToMonday = (dayOfWeek + 6) % 7
-        const monday = new Date(dateObj)
-        monday.setDate(dateObj.getDate() - diffToMonday)
-        const sunday = new Date(monday)
-        sunday.setDate(monday.getDate() + 6)
-
-        const mStr = monday.toISOString().split('T')[0]
-        const sStr = sunday.toISOString().split('T')[0]
-        groupKey = `week-${mStr}`
-        sortKey = mStr
-        groupTitle = `Semana ${formatDate(mStr)} a ${formatDate(sStr)}`
-      } else if (groupBy === 'month') {
-        const [year, month] = tx.date.split('-')
-        groupKey = `${year}-${month}`
-        sortKey = groupKey
-        const dateObj = new Date(parseInt(year), parseInt(month) - 1, 1)
-        const monthName = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(dateObj)
-        groupTitle = monthName.charAt(0).toUpperCase() + monthName.slice(1)
-      }
-
-      if (!groups.has(groupKey)) {
-        groups.set(groupKey, {
-          key: groupKey,
-          title: groupTitle,
-          sortKey,
-          items: [],
-          income: 0,
-          expense: 0,
-          net: 0,
-        })
-      }
-
-      const grp = groups.get(groupKey)!
-      grp.items.push(tx)
-      if (tx.type === 'income') {
-        grp.income += Number(tx.amount)
-      } else {
-        grp.expense += Number(tx.amount)
-      }
-      grp.net = grp.income - grp.expense
-    }
-
-    return Array.from(groups.values()).sort((a, b) => b.sortKey.localeCompare(a.sortKey))
-  }, [filteredTransactions, groupBy, kpis])
+  const groupedSections = useMemo(() => groupDateItems(filteredTransactions, groupBy, order).map(section => {
+    const income = section.items.reduce((sum, tx) => sum + (tx.type === 'income' ? Number(tx.amount) : 0), 0)
+    const expense = section.items.reduce((sum, tx) => sum + (tx.type === 'expense' ? Number(tx.amount) : 0), 0)
+    return { ...section, income, expense, net: income - expense }
+  }), [filteredTransactions, groupBy, order])
 
   // Delete transaction action
   const confirmDelete = () => {
@@ -442,9 +271,6 @@ export default function TransactionsClient({
 
       <StatementTabs active="bank" />
       {/* Summary KPI Cards */}
-      <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-        <Link href="/dashboard/invoices" style={{ color: 'var(--brand-400)' }}>Ver extrato do cartão</Link>
-      </p>
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))',
@@ -501,258 +327,21 @@ export default function TransactionsClient({
         />
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="filter-bar" style={{ marginBottom: '1.5rem' }}>
-        {/* Top filter row: Search input + Period Select + Group By */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))',
-          gap: '0.75rem',
-          alignItems: 'center',
-        }}>
-          {/* Search box */}
-          <div style={{ position: 'relative' }}>
-            <Search
-              size={16}
-              style={{
-                position: 'absolute',
-                left: '0.875rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'var(--text-muted)',
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Buscar por descrição, categoria..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="input"
-              style={{ paddingLeft: '2.5rem' }}
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                style={{
-                  position: 'absolute',
-                  right: '0.75rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-muted)',
-                  cursor: 'pointer',
-                }}
-              >
-                <X size={14} />
-              </button>
-            )}
-          </div>
-
-          {/* Account Filter */}
-          <select
-            className="input"
-            value={selectedAccountId}
-            onChange={e => setSelectedAccountId(e.target.value)}
-          >
-            <option value="all">Todas as Contas</option>
-            {accounts.map(acc => (
-              <option key={acc.id} value={acc.id}>
-                {acc.name}
-              </option>
-            ))}
-            <option value="none">Sem conta associada</option>
-          </select>
-
-          {/* Type Filter */}
-          <select
-            className="input"
-            value={selectedType}
-            onChange={e => setSelectedType(e.target.value as 'all' | 'expense' | 'income')}
-          >
-            <option value="all">Todos os Tipos</option>
-            <option value="expense">Apenas Despesas (-)</option>
-            <option value="income">Apenas Receitas (+)</option>
-          </select>
-
-          {/* Category Filter */}
-          <select
-            className="input"
-            value={selectedCategory}
-            onChange={e => setSelectedCategory(e.target.value)}
-          >
-            <option value="all">Todas as Categorias</option>
-            {availableCategories.map(cat => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Secondary row: Quick Period Chips + Grouping Toggle + Clear Button */}
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '0.75rem',
-          borderTop: '1px solid var(--bg-border-subtle)',
-          paddingTop: '0.875rem',
-        }}>
-          {/* Period Chips */}
-          <div className="filter-chip-group">
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginRight: '0.25rem' }}>
-              Período:
-            </span>
-            <button
-              type="button"
-              className={`filter-chip ${periodPreset === 'this_month' ? 'active' : ''}`}
-              onClick={() => setPeriodPreset('this_month')}
-            >
-              Este Mês
-            </button>
-            <button
-              type="button"
-              className={`filter-chip ${periodPreset === 'last_month' ? 'active' : ''}`}
-              onClick={() => setPeriodPreset('last_month')}
-            >
-              Mês Anterior
-            </button>
-            <button
-              type="button"
-              className={`filter-chip ${periodPreset === 'last_30_days' ? 'active' : ''}`}
-              onClick={() => setPeriodPreset('last_30_days')}
-            >
-              30 Dias
-            </button>
-            <button
-              type="button"
-              className={`filter-chip ${periodPreset === 'last_90_days' ? 'active' : ''}`}
-              onClick={() => setPeriodPreset('last_90_days')}
-            >
-              90 Dias
-            </button>
-            <button
-              type="button"
-              className={`filter-chip ${periodPreset === 'this_year' ? 'active' : ''}`}
-              onClick={() => setPeriodPreset('this_year')}
-            >
-              Este Ano
-            </button>
-            <button
-              type="button"
-              className={`filter-chip ${periodPreset === 'all' ? 'active' : ''}`}
-              onClick={() => setPeriodPreset('all')}
-            >
-              Tudo
-            </button>
-            <button
-              type="button"
-              className={`filter-chip ${periodPreset === 'custom' ? 'active' : ''}`}
-              onClick={() => setPeriodPreset('custom')}
-            >
-              Personalizado
-            </button>
-          </div>
-
-          {/* Grouping Selector */}
-          <div className="grouping-control">
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Agrupar:</span>
-            <div style={{
-              display: 'inline-flex',
-              background: 'var(--bg-surface)',
-              borderRadius: '8px',
-              border: '1px solid var(--bg-border)',
-              padding: '2px',
-            }}>
-              {(['day', 'week', 'month', 'none'] as GroupByMode[]).map(mode => {
-                const labels: Record<GroupByMode, string> = {
-                  day: 'Dia',
-                  week: 'Semana',
-                  month: 'Mês',
-                  none: 'Nenhum',
-                }
-                const isActive = groupBy === mode
-                return (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => setGroupBy(mode)}
-                    style={{
-                      padding: '0.25rem 0.625rem',
-                      fontSize: '0.75rem',
-                      fontWeight: isActive ? 600 : 500,
-                      borderRadius: '6px',
-                      border: 'none',
-                      background: isActive ? 'var(--brand-600)' : 'transparent',
-                      color: isActive ? '#ffffff' : 'var(--text-secondary)',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                    }}
-                  >
-                    {labels[mode]}
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Clear filters */}
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={handleClearFilters}
-                className="btn-ghost"
-                style={{
-                  fontSize: '0.75rem',
-                  padding: '0.375rem 0.625rem',
-                  height: 'auto',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  color: 'var(--text-muted)',
-                }}
-              >
-                <X size={13} />
-                Limpar
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Custom Date Pickers when 'custom' is active */}
-        {periodPreset === 'custom' && (
-          <div className="date-range" style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            paddingTop: '0.75rem',
-            borderTop: '1px dashed var(--bg-border-subtle)',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>De:</span>
-              <input
-                type="date"
-                className="input"
-                style={{ padding: '0.375rem 0.625rem', fontSize: '0.8125rem' }}
-                value={customStartDate}
-                onChange={e => setCustomStartDate(e.target.value)}
-              />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Até:</span>
-              <input
-                type="date"
-                className="input"
-                style={{ padding: '0.375rem 0.625rem', fontSize: '0.8125rem' }}
-                value={customEndDate}
-                onChange={e => setCustomEndDate(e.target.value)}
-              />
-            </div>
-          </div>
-        )}
-      </div>
+      <section className="glass-card" style={{ padding: '1rem', marginBottom: '1rem' }}>
+        <MonthPicker label="Extrato bancário" value={selectedMonth} months={initialTransactions.map(tx => tx.date.slice(0, 7))} onChange={value => { setSelectedMonth(value); setPeriodPreset('month') }} />
+        {periodPreset !== 'month' && <p style={{ color: 'var(--text-secondary)', fontSize: '.8125rem', marginTop: '.5rem' }}>Filtro por intervalo ativo abaixo. Selecione um mês para voltar ao filtro mensal.</p>}
+      </section>
+      <DateListControls search={searchQuery} onSearch={setSearchQuery} period={periodPreset} onPeriod={setPeriodPreset} start={customStartDate} end={customEndDate} onStart={setCustomStartDate} onEnd={setCustomEndDate} group={groupBy} onGroup={setGroupBy} order={order} onOrder={setOrder} onClear={handleClearFilters}>
+        <label className="label">Conta<select className="input" value={selectedAccountId} onChange={event => setSelectedAccountId(event.target.value)}>
+          <option value="all">Todas as contas</option>{accounts.map(account => <option key={account.id} value={account.id}>{account.name}</option>)}<option value="none">Sem conta associada</option>
+        </select></label>
+        <label className="label">Tipo<select className="input" value={selectedType} onChange={event => setSelectedType(event.target.value as 'all' | 'expense' | 'income')}>
+          <option value="all">Todos os tipos</option><option value="expense">Despesas</option><option value="income">Receitas</option>
+        </select></label>
+        <label className="label">Categoria<select className="input" value={selectedCategory} onChange={event => setSelectedCategory(event.target.value)}>
+          <option value="all">Todas as categorias</option>{availableCategories.map(category => <option key={category} value={category}>{category}</option>)}
+        </select></label>
+      </DateListControls>
 
       {/* Transaction List / Groups */}
       {initialTransactions.length === 0 ? (
@@ -860,7 +449,8 @@ export default function TransactionsClient({
                           {/* Description */}
                           <td style={{ fontWeight: 500, color: 'var(--text-primary)' }}>
                             {tx.description || 'Sem descrição'}
-                            {tx.type === 'expense' && isInvoicePayment(categories.find(category => category.id === tx.category_id)?.name ?? tx.category) && <div><Link href="/dashboard/invoices" className="badge badge-neutral">Fora do extrato geral</Link></div>}
+                            <ReimbursementBadge record={reimbursementFor(reimbursements, 'bank', tx.id)} />
+                            {isInvoicePaymentTransaction(tx, categories) && <div><span className="badge badge-neutral">Fora do extrato geral</span></div>}
                           </td>
 
                           {/* Category badge */}
@@ -970,10 +560,10 @@ export default function TransactionsClient({
                       </div>
 
                       {/* Middle: Description + Category */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
                         <span style={{ fontWeight: 600, fontSize: '0.9375rem', color: 'var(--text-primary)' }}>
                           {tx.description || 'Sem descrição'}
-                          {tx.type === 'expense' && isInvoicePayment(categories.find(category => category.id === tx.category_id)?.name ?? tx.category) && <span className="badge badge-neutral">Fora do extrato geral</span>}
+                          {isInvoicePaymentTransaction(tx, categories) && <span className="badge badge-neutral">Fora do extrato geral</span>}
                         </span>
                         {tx.category && (
                           <span className="badge badge-neutral" style={{ fontSize: '0.6875rem' }}>
@@ -982,6 +572,7 @@ export default function TransactionsClient({
                         )}
                       </div>
 
+                      <ReimbursementBadge record={reimbursementFor(reimbursements, 'bank', tx.id)} />
                       {/* Bottom: Amount + Actions */}
                       <div style={{
                         display: 'flex',

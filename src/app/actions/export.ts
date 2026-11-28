@@ -1,5 +1,6 @@
 'use server'
 
+import { loadReimbursements } from '@/lib/reimbursementData'
 import { createClient } from '@/lib/supabase/server'
 import type { AccountType, AccountSnapshot, Transaction, RecurringPlan, StockPosition, StockPriceHistory } from '@/types/database'
 import { loadInvoiceData } from '@/lib/invoiceData'
@@ -21,6 +22,7 @@ export async function fetchAllUserData() {
     { data: positions },
     { data: history },
     invoiceData,
+    reimbursementData,
   ] = await Promise.all([
     db.from('account_types').select('*').eq('user_id', user.id),
     db.from('account_snapshots').select('*').eq('user_id', user.id),
@@ -29,6 +31,7 @@ export async function fetchAllUserData() {
     db.from('stock_positions').select('*').eq('user_id', user.id),
     db.from('stock_price_history').select('*').eq('user_id', user.id),
     loadInvoiceData(),
+    loadReimbursements(),
   ])
 
   return {
@@ -39,5 +42,6 @@ export async function fetchAllUserData() {
     positions: positions as StockPosition[] || [],
     history: history as StockPriceHistory[] || [],
     invoiceData,
+    reimbursementData,
   }
 }

@@ -1,0 +1,6 @@
+.controls { min-width: 0; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: .75rem; min-width: 0; }
+.field { display: flex; flex-direction: column; gap: .375rem; font-size: .8125rem; color: var(--text-secondary); min-width: 0; }
+.caption { color: var(--text-secondary); font-size: .75rem; line-height: 1.5; }
+.bottom { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: space-between; align-items: center; }
+@media (max-width: 768px) { .controls button { min-height: 2.75rem; } .fields { grid-template-columns: minmax(0, 1fr); } }

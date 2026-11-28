@@ -1,3 +1,4 @@
+import { isInvoicePaymentDescription } from './invoicePayments'
 export interface OfxTransaction {
   id: string // Generated temporary client ID
   fitid: string
@@ -75,7 +76,7 @@ export function suggestCategory(
   }
 
   // Classificação sugerida; o usuário revisa antes de importar.
-  if (/pagamento.*fatura|pag\.?\s*fatura|pagamento.*cart[aã]o|fatura.*pagamento/i.test(text)) return 'Pagamento de fatura'
+  if (isInvoicePaymentDescription(text)) return 'Pagamento de fatura'
 
   // Expenses rules
   // Alimentação / Mercado / Restaurantes

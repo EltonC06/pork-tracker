@@ -1,8 +1,9 @@
 import type { ExpenseCategoryOption, Transaction } from '@/types/database'
 import type { CardInvoice, CardInvoiceItem } from '@/types/invoices'
 import { categoryKey, type CategoryTotal, type ExpenseEntry } from './categoryAnalytics'
+import { isInvoicePaymentTransaction } from './invoicePayments'
+export { INVOICE_PAYMENT_CATEGORY, isInvoicePayment, isInvoicePaymentTransaction } from './invoicePayments'
 
-export const INVOICE_PAYMENT_CATEGORY = 'Pagamento de fatura'
 export type StatementSource = 'general' | 'bank' | 'card'
 export interface StatementEntry extends ExpenseEntry {
   id: string
@@ -13,8 +14,11 @@ export interface StatementEntry extends ExpenseEntry {
   invoiceId?: string
 }
 
-export function isInvoicePayment(category: string | null | undefined) {
-  return category?.trim().toLocaleLowerCase('pt-BR') === INVOICE_PAYMENT_CATEGORY.toLocaleLowerCase('pt-BR')
+// The schema does not identify counterparties. Only an explicit own-account
+// description is sufficient; generic Pix, TED or "Transferência" can be spending.
+export function isOwnAccountTransfer(tx: Pick<Transaction, 'description'>) {
+  const description = (tx.description ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
+  return /\b(?:transferencia|transf|pix|ted|doc)\b.*\b(?:entre (?:minhas|suas) contas|minhas contas|contas? proprias?|mesma titularidade)\b/.test(description)
 }
 
 export function suggestedStatementMonth(items: Array<{ date: string }>, dueDate: string) {
@@ -25,7 +29,7 @@ export function suggestedStatementMonth(items: Array<{ date: string }>, dueDate:
 
 export function buildStatement(source: StatementSource, transactions: Transaction[], invoices: CardInvoice[], items: CardInvoiceItem[], categories: ExpenseCategoryOption[] = []): StatementEntry[] {
   const bank: StatementEntry[] = source === 'card' ? [] : transactions
-    .filter(tx => source === 'bank' || tx.type !== 'expense' || !isInvoicePayment(categories.find(c => c.id === tx.category_id)?.name ?? tx.category))
+    .filter(tx => source === 'bank' || (!isInvoicePaymentTransaction(tx, categories) && !isOwnAccountTransfer(tx)))
     .map(tx => ({ id: `bank:${tx.id}`, source: 'bank', description: tx.description || 'Sem descrição', date: tx.date, originalDate: tx.date, type: tx.type, amount: Number(tx.amount), category_id: tx.category_id, category: tx.category }))
   const invoiceMap = new Map(invoices.map(invoice => [invoice.id, invoice]))
   const card: StatementEntry[] = source === 'bank' ? [] : items.flatMap(item => {

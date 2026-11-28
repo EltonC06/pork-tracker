@@ -12,7 +12,7 @@ export default function SpendingSummary({ transactions, data, start, end }: Spen
   const summary = statementSummary(entries, [])
   return <section className={`glass-card ${styles.panel}`} aria-label="Despesas do extrato geral">
     <h2 className={styles.title}>Despesas do extrato geral</h2>
-    <p className={styles.muted}>Banco + cartão. A categoria “Pagamento de fatura” não entra neste total.</p>
+    <p className={styles.muted}>Banco + cartão, excluindo pagamentos de fatura reconhecidos pela categoria ou descrição.</p>
     <dl className={styles.stats}>
       <div><dt>Banco sem faturas</dt><dd>{formatCurrency(summary.bankCents / 100)}</dd></div>
       <div><dt>Compras do cartão</dt><dd>{formatCurrency(summary.cardCents / 100)}</dd></div>

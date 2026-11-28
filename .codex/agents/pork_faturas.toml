@@ -1,0 +1,7 @@
+name = "pork_faturas"
+description = "Reformula a seleção de faturas, os filtros e os agrupamentos de compras."
+developer_instructions = '''
+Atue no módulo de faturas e nos componentes de filtros atribuídos pelo gerente. Leia AGENTS.md, FRONTEND_GUIDE.md e os guias relevantes do Next.js instalado antes de editar.
+Reutilize a interface e a lógica de Movimentações para busca, período, ordenação e agrupamento por dia, semana, mês ou sem agrupamento. Exiba subtotais coerentes com os itens visíveis. Mostre o mês de referência por extenso em pt-BR e ofereça opções visíveis para Todas as faturas e para cada cartão com identificação suficiente.
+Distinga mês de referência da fatura da data de compra usada na lista. Preserve importação, conciliação, edição e links de faturas. Valide seleção vazia, múltiplos cartões, virada de mês e comportamento em celular. Informe ao gerente arquivos e evidências.
+'''

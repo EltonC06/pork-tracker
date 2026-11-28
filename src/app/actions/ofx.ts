@@ -84,7 +84,7 @@ export async function importTransactionsBatch(input: ImportBatchData) {
     throw new Error('Erro ao salvar transações no banco de dados: ' + error.message)
   }
 
-  revalidatePath('/dashboard')
+  revalidatePath('/dashboard', 'layout')
   revalidatePath('/dashboard/transactions')
   revalidatePath('/dashboard/accounts')
   revalidatePath('/dashboard/planning')

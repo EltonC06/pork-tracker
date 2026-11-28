@@ -1,3 +1,4 @@
+import type { Reimbursement } from './reimbursements'
 import type { CardInvoice, CardInvoiceItem, InvoicePayment } from './invoices'
 
 type InvoiceTable<T> = {
@@ -18,6 +19,12 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      reimbursements: {
+        Row: { [K in keyof Reimbursement]: Reimbursement[K] }
+        Insert: Pick<Reimbursement, 'user_id' | 'source' | 'description' | 'due_date'> & Partial<Pick<Reimbursement, 'id' | 'transaction_id' | 'invoice_item_id' | 'status'>>
+        Update: Partial<Reimbursement>
+        Relationships: []
+      }
       card_invoices: InvoiceTable<CardInvoice>
       card_invoice_items: InvoiceTable<CardInvoiceItem>
       card_invoice_payments: InvoiceTable<InvoicePayment>

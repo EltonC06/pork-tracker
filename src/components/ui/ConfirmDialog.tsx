@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { AlertTriangle, Trash2, X } from 'lucide-react'
+import useDialogFocus from './useDialogFocus'
 
 interface ConfirmDialogProps {
   isOpen: boolean
@@ -22,6 +23,7 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const dialogRef = useDialogFocus(isOpen)
   // Close on Escape key
   useEffect(() => {
     if (!isOpen) return
@@ -46,6 +48,9 @@ export default function ConfirmDialog({
     <div className="modal-overlay" onClick={onCancel}>
       <div
         className="confirm-dialog"
+        ref={dialogRef}
+        tabIndex={-1}
+        aria-modal="true"
         onClick={e => e.stopPropagation()}
         role="alertdialog"
         aria-labelledby="confirm-dialog-title"

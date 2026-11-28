@@ -1,3 +1,4 @@
+import { loadReimbursements } from '@/lib/reimbursementData'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import TransactionsClient from './TransactionsClient'
@@ -17,7 +18,8 @@ export default async function TransactionsPage() {
 
   const db = supabase as any
 
-  const [transactions, { data: accountTypes }, { data: categories }] = await Promise.all([
+  const [reimbursements, transactions, { data: accountTypes }, { data: categories }] = await Promise.all([
+    loadReimbursements(),
     loadCashTransactions(),
     db
       .from('account_types')
@@ -36,6 +38,7 @@ export default async function TransactionsPage() {
       initialTransactions={(transactions as Transaction[]) ?? []}
       accounts={(accountTypes as AccountType[]) ?? []}
       categories={(categories as ExpenseCategoryOption[]) ?? []}
+      reimbursements={reimbursements.records}
     />
   )
 }

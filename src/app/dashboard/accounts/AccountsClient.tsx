@@ -2,14 +2,16 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { Plus, Trash2, ArrowUpRight, ArrowDownRight, Edit2, BarChart2, History, Calendar, Clock, Upload } from 'lucide-react'
+import { Plus, Trash2, BarChart2, History, Calendar, Clock, Upload } from 'lucide-react'
 import { createAccountType, deleteSnapshot } from '@/app/actions/accounts'
 import { deleteTransaction } from '@/app/actions/transactions'
 import { createRecurringPlan, deleteRecurringPlan } from '@/app/actions/planning'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { AccountType, AccountSnapshot, Transaction, RecurringPlan, ExpenseCategoryOption } from '@/types/database'
 import AccountLineChart from '@/components/charts/AccountLineChart'
-import TabBar from '@/components/ui/TabBar'
+import AccountTabs from './components/AccountTabs'
+import { AccountTransactions, AccountPlans } from './components/AccountActivity'
+import styles from './accounts.module.css'
 import EmptyState from '@/components/ui/EmptyState'
 import FormModal from '@/components/ui/FormModal'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
@@ -127,16 +129,16 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
   const today = new Date().toISOString().split('T')[0]
 
   return (
-    <div>
+    <div className={styles.page}>
       {/* Header */}
-      <div className="page-header">
+      <div className={styles.header}>
         <div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: '800', marginBottom: '0.25rem' }}>Contas</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
             Gerencie seus saldos, transações e previsibilidades
           </p>
         </div>
-        <div className="page-actions">
+        <div className={styles.headerActions}>
           <button
             type="button"
             className="btn-ghost"
@@ -161,7 +163,7 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
           action={{ label: '+ Nova Conta', onClick: () => setShowNewAccountModal(true) }}
         />
       ) : (
-        <div className="accounts-grid">
+        <div className={styles.list}>
           {accountTypes.map(acct => {
             const acctSnaps = snapshots
               .filter(s => s.account_type_id === acct.id)
@@ -185,15 +187,17 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
                 onImportOfx={() => setShowOfxModal(acct.id)}
               >
                 {/* Tab Navigation */}
-                <TabBar
+                <AccountTabs
+                  accountId={acct.id}
+                  accountName={acct.name}
                   tabs={ACCOUNT_TABS}
                   activeTab={currentTab}
-                  onChange={tabId => setActiveTabs({ ...activeTabs, [acct.id]: tabId })}
+                  onChange={tabId => setActiveTabs(previous => ({ ...previous, [acct.id]: tabId }))}
                 />
 
                 {/* Tab: Overview */}
                 {currentTab === 'overview' && (
-                  <div>
+                  <div role="tabpanel" id={`account-${acct.id}-panel-overview`} aria-labelledby={`account-${acct.id}-tab-overview`} tabIndex={0} className={styles.panel}>
                     {chartData.length >= 2 && (
                       <div style={{ marginBottom: '1.5rem' }}>
                         <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '0.75rem', fontWeight: 500 }}>
@@ -240,105 +244,20 @@ export default function AccountsClient({ accountTypes, snapshots, transactions, 
 
                 {/* Tab: Transactions */}
                 {currentTab === 'tx' && (
-                  <div>
-                    {acctTxs.length === 0 ? (
-                      <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', textAlign: 'center' }}>Nenhuma transação registrada.</p>
-                    ) : (
-                      <table className="data-table responsive-table" role="table">
-                        <thead role="rowgroup">
-                          <tr role="row">
-                            <th scope="col" role="columnheader">Data</th>
-                            <th scope="col" role="columnheader">Tipo</th>
-                            <th scope="col" role="columnheader">Categoria</th>
-                            <th scope="col" role="columnheader">Descrição</th>
-                            <th scope="col" role="columnheader">Valor</th>
-                            <th scope="col" role="columnheader" style={{ width: 80 }}></th>
-                          </tr>
-                        </thead>
-                        <tbody role="rowgroup">
-                          {acctTxs.map(tx => (
-                            <tr role="row" key={tx.id}>
-                              <td data-label="Data" role="cell">{formatDate(tx.date)}</td>
-                              <td data-label="Tipo" role="cell">
-                                {tx.type === 'income' ? (
-                                  <span style={{ color: 'var(--success-400)', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8125rem', fontWeight: 600 }}>
-                                    <ArrowUpRight size={14} /> Receita
-                                  </span>
-                                ) : (
-                                  <span style={{ color: 'var(--danger-400)', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.8125rem', fontWeight: 600 }}>
-                                    <ArrowDownRight size={14} /> Despesa
-                                  </span>
-                                )}
-                              </td>
-                              <td data-label="Categoria" role="cell" style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>
-                                {tx.category || '—'}
-                              </td>
-                              <td data-label="Descrição" role="cell">{tx.description || '—'}</td>
-                              <td data-label="Valor" role="cell" style={{ fontWeight: 700, color: tx.type === 'income' ? 'var(--success-400)' : 'var(--text-primary)' }}>
-                                {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
-                              </td>
-                              <td data-label="Ações" role="cell">
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                  <button className="btn-secondary" style={{ padding: '0.25rem 0.5rem', minHeight: 0 }} onClick={() => setShowEditTxModal(tx)} title="Editar">
-                                    <Edit2 size={13} />
-                                  </button>
-                                  <button className="btn-danger" style={{ padding: '0.25rem 0.5rem', minHeight: 0 }} onClick={() => setDeleteConfirm({ type: 'tx', id: tx.id, label: 'esta transação' })} title="Excluir">
-                                    <Trash2 size={13} />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    )}
+                  <div role="tabpanel" id={`account-${acct.id}-panel-tx`} aria-labelledby={`account-${acct.id}-tab-tx`} tabIndex={0} className={styles.panel}>
+                    <AccountTransactions transactions={acctTxs} onEdit={setShowEditTxModal}
+                      onDelete={id => setDeleteConfirm({ type: 'tx', id, label: 'esta transação' })} />
                   </div>
                 )}
-
                 {/* Tab: Plans */}
                 {currentTab === 'plans' && (
-                  <div>
+                  <div role="tabpanel" id={`account-${acct.id}-panel-plans`} aria-labelledby={`account-${acct.id}-tab-plans`} tabIndex={0} className={styles.panel}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-                      <button className="btn-secondary" style={{ fontSize: '0.75rem', padding: '0.4rem 0.75rem' }} onClick={() => setShowPlanModal(acct.id)}>
+                      <button type="button" className="btn-secondary" onClick={() => setShowPlanModal(acct.id)}>
                         <Clock size={14} /> Adicionar Previsão
                       </button>
                     </div>
-                    {acctPlans.length === 0 ? (
-                      <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', textAlign: 'center' }}>Nenhuma previsão configurada.</p>
-                    ) : (
-                      <table className="data-table responsive-table" role="table">
-                        <thead role="rowgroup">
-                          <tr role="row">
-                            <th scope="col" role="columnheader">Nome</th>
-                            <th scope="col" role="columnheader">Frequência</th>
-                            <th scope="col" role="columnheader">Próx. Data</th>
-                            <th scope="col" role="columnheader">Valor</th>
-                            <th scope="col" role="columnheader" style={{ width: 48 }}></th>
-                          </tr>
-                        </thead>
-                        <tbody role="rowgroup">
-                          {acctPlans.map(plan => (
-                            <tr role="row" key={plan.id}>
-                              <td data-label="Nome" role="cell" style={{ fontWeight: 600 }}>{plan.name}</td>
-                              <td data-label="Frequência" role="cell">
-                                <span className="badge badge-neutral">
-                                  {plan.frequency === 'monthly' ? 'Mensal' : plan.frequency === 'yearly' ? 'Anual' : 'Única'}
-                                </span>
-                              </td>
-                              <td data-label="Próx. Data" role="cell">{plan.target_date ? formatDate(plan.target_date) : '—'}</td>
-                              <td data-label="Valor" role="cell" style={{ fontWeight: 700, color: plan.type === 'income' ? 'var(--success-400)' : 'var(--text-primary)' }}>
-                                {plan.type === 'income' ? '+' : '-'}{formatCurrency(plan.amount)}
-                              </td>
-                              <td data-label="Ações" role="cell">
-                                <button className="btn-danger" aria-label="Excluir previsão" style={{ padding: '0.25rem 0.5rem' }} onClick={() => setDeleteConfirm({ type: 'plan', id: plan.id, label: 'esta previsão' })}>
-                                  <Trash2 size={13} />
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    )}
+                    <AccountPlans plans={acctPlans} onDelete={id => setDeleteConfirm({ type: 'plan', id, label: 'esta previsão' })} />
                   </div>
                 )}
               </AccountCard>

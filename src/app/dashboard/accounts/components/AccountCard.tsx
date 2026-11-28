@@ -5,8 +5,9 @@ import { toast } from 'sonner'
 import { ChevronDown, ChevronUp, Plus, Edit2, Trash2, Upload } from 'lucide-react'
 import { deleteAccountType } from '@/app/actions/accounts'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import type { AccountType, AccountSnapshot, Transaction, RecurringPlan } from '@/types/database'
+import type { AccountType } from '@/types/database'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import styles from '../accounts.module.css'
 
 interface AccountCardProps {
   account: AccountType
@@ -49,9 +50,9 @@ export default function AccountCard({
 
   return (
     <>
-      <div className="glass-card account-card">
+      <div className={`glass-card ${styles.card}`}>
         {/* Card Header */}
-        <div className="account-heading">
+        <div className={styles.cardHeader}>
           <div style={{
             width: '48px', height: '48px',
             background: `${account.color ?? '#6366f1'}22`,
@@ -62,7 +63,7 @@ export default function AccountCard({
           }}>
             {account.icon ?? '💰'}
           </div>
-          <div className="account-identity">
+          <div className={styles.identity}>
             <h3 style={{ fontWeight: 700, fontSize: '1.0625rem' }}>{account.name}</h3>
             {latestBalance ? (
               <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>
@@ -72,16 +73,16 @@ export default function AccountCard({
               <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem' }}>Sem registros ainda</p>
             )}
           </div>
-          <div className="account-balance">
-            <p style={{ fontSize: '1.375rem', fontWeight: '800' }}>
+          <div className={styles.balance}>
+            <p>
               {latestBalance ? formatCurrency(latestBalance.balance) : '—'}
             </p>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="account-actions">
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', flex: 1 }}>
+        <div className={styles.actions}>
+          <div className={styles.primaryActions}>
             <button
               className="btn-primary"
               style={{ fontSize: '0.8125rem', padding: '0.4rem 0.75rem' }}
@@ -99,6 +100,10 @@ export default function AccountCard({
             <button
               className="btn-ghost"
               style={{ fontSize: '0.8125rem', padding: '0.4rem 0.75rem' }}
+              id={`account-${account.id}-toggle`}
+              aria-expanded={isExpanded}
+              aria-controls={`account-${account.id}-details`}
+              aria-label={`${isExpanded ? 'Fechar' : 'Abrir'} detalhes de ${account.name}`}
               onClick={onToggleExpand}
             >
               {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -120,6 +125,7 @@ export default function AccountCard({
               className="btn-ghost"
               onClick={onEditAccount}
               title="Editar Conta"
+              aria-label={`Editar conta ${account.name}`}
               style={{ padding: '0.4rem', border: 'none' }}
             >
               <Edit2 size={14} />
@@ -128,6 +134,8 @@ export default function AccountCard({
               className="btn-danger"
               onClick={() => setShowDeleteConfirm(true)}
               title="Excluir Conta"
+              aria-label={`Excluir conta ${account.name}`}
+              disabled={isPending}
             >
               <Trash2 size={14} />
             </button>
@@ -136,7 +144,7 @@ export default function AccountCard({
 
         {/* Expanded Content */}
         {isExpanded && (
-          <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--bg-border)', paddingTop: '1.5rem' }}>
+          <div id={`account-${account.id}-details`} role="region" aria-labelledby={`account-${account.id}-toggle`} className={styles.details}>
             {children}
           </div>
         )}
