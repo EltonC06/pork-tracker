@@ -73,6 +73,71 @@ assert.equal(refunds.totalCents, -100)
 assert.equal(refunds.rows[0].percent, 0)
 console.log('Parser e extratos: separação, categoria de pagamento, estornos e mês de referência passaram.')
 
+const { isInvoicePaymentDescription, isInvoicePaymentTransaction } = require('../src/lib/invoicePayments.ts')
+const { shiftMonth, monthBounds } = require('../src/lib/months.ts')
+const { reimbursementCandidates, reimbursementSummary, reimbursementFor } = require('../src/lib/reimbursements.ts')
+for (const description of ['Pagamento Fatura - TITULAR', 'Automático: Pagamento de fatura', 'PGTO. DA FATURA', 'Fatura banco inter', 'Fatura cartão', 'Pagamento cartão de crédito', 'Fatura cartÃ£o Inter']) {
+  assert.equal(isInvoicePaymentDescription(description), true, description)
+  assert.equal(isInvoicePaymentTransaction({ type: 'expense', category: 'Lazer', description }), true)
+}
+for (const description of ['Pagamento Pix', 'Compra de cartão de memória', 'Fatura de energia', 'Mercado', 'Oferta da próxima fatura']) assert.equal(isInvoicePaymentDescription(description), false, description)
+assert.equal(isInvoicePaymentTransaction({ type: 'expense', category: 'Fatura', description: 'Banco' }), true)
+assert.equal(isInvoicePaymentTransaction({ type: 'income', category: 'Fatura', description: 'Pagamento Fatura' }), false)
+const legacyPayments = [
+  { ...txs[0], category: 'Fatura', description: 'Pagamento Fatura - TITULAR' },
+  { ...txs[0], id: 'older', category: 'Lazer', description: 'Automático: Pagamento de fatura' },
+]
+assert.equal(buildStatement('general', legacyPayments, [], []).length, 0)
+assert.equal(buildStatement('bank', legacyPayments, [], []).length, 2)
+assert.equal(statementSummary(buildStatement('general', [...legacyPayments, txs[1]], invoices, items), []).totalCents, 20000)
+assert.equal(shiftMonth('2026-12', 1), '2027-01')
+assert.equal(shiftMonth('2026-01', -1), '2025-12')
+assert.equal(monthBounds('2024-02').end, '2024-02-29')
+assert.equal(monthBounds('2026-02').end, '2026-02-28')
+const records = [
+  { id: 'r1', source: 'bank', transaction_id: 'pix', invoice_item_id: null, amount_cents: 2000, status: 'to_claim', due_date: '2026-12-01' },
+  { id: 'r2', source: 'card', transaction_id: null, invoice_item_id: '0', amount_cents: 10000, status: 'reimbursed', due_date: '2026-12-01' },
+  { id: 'r3', source: 'card', transaction_id: null, invoice_item_id: '1', amount_cents: 4500, status: 'not_reimbursed', due_date: '2026-12-01' },
+]
+const candidates = reimbursementCandidates([...txs, ...legacyPayments], items, [], records)
+assert.equal(candidates.some(row => ['payment', 'pix', 'older', 'income', '0', '1'].includes(row.id)), false)
+assert.equal(candidates.every(row => row.amountCents > 0), true)
+const reimbursementTotals = reimbursementSummary(records, '2026-12-15')
+assert.equal(reimbursementTotals.pending.length, 2)
+assert.equal(reimbursementTotals.received.length, 1)
+assert.equal(reimbursementTotals.overdue, 1)
+assert.equal(reimbursementTotals.pendingCents, 6500)
+assert.equal(reimbursementFor(records, 'bank', 'pix').id, 'r1')
+assert.equal(reimbursementFor(records, 'card', 'pix'), undefined)
+console.log('Pagamentos históricos, mês/ano e acompanhamento de reembolsos passaram.')
+
+// A known reference month: R$ 180 card purchases net of refunds + R$ 20 Pix.
+// Settlement, both own-account transfer legs, and reimbursement status must
+// not inflate or silently reduce that consumption total.
+const { isOwnAccountTransfer } = require('../src/lib/statements.ts')
+const transferLegs = [
+  { ...txs[1], id: 'own-out', amount: 250, description: 'Transferência entre contas próprias' },
+  { ...txs[2], id: 'own-in', amount: 250, description: 'Pix mesma titularidade' },
+]
+for (const description of ['Transferência entre contas próprias', 'PIX ENTRE MINHAS CONTAS', 'TED mesma titularidade', 'Transf. contas próprias']) {
+  assert.equal(isOwnAccountTransfer({ description }), true, description)
+}
+for (const description of ['Pix mercado', 'Transferência fornecedor', 'TED recebida', 'Depósito', 'Transferência entre contas', null]) {
+  assert.equal(isOwnAccountTransfer({ description }), false, description)
+}
+const knownMonth = buildStatement('general', [...txs, ...legacyPayments, ...transferLegs], invoices, items)
+  .filter(entry => entry.date.startsWith('2026-12'))
+assert.equal(knownMonth.filter(entry => entry.source === 'card').length, 4)
+assert.equal(statementSummary(knownMonth, []).totalCents, 20000)
+assert.equal(statementSummary(knownMonth, []).incomeCents, 100000)
+assert.equal(buildStatement('bank', transferLegs, [], []).length, 2)
+const reimbursementReceipt = { ...txs[2], id: 'reimbursement-receipt', amount: 100, description: 'Reembolso recebido' }
+const withReceipt = buildStatement('general', [...txs, ...transferLegs, reimbursementReceipt], invoices, items)
+assert.equal(statementSummary(withReceipt, []).totalCents, 20000)
+assert.equal(statementSummary(withReceipt, []).incomeCents, 110000)
+assert.equal(statementSummary(buildStatement('general', [{ ...txs[1], description: 'Pix mercado' }], [], []), []).totalCents, 2000)
+console.log('Gasto mensal conhecido: R$ 200; compras únicas, transferências próprias, estornos e reembolso conferidos.')
+
 async function checkPdf(filename) {
   const { getDocument } = await import('pdfjs-dist/legacy/build/pdf.mjs')
   const task = getDocument({ data: new Uint8Array(fs.readFileSync(filename)) })

@@ -1,9 +1,12 @@
 'use client'
 
+import type { Reimbursement } from '@/types/reimbursements'
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { deleteCardInvoice, updateInvoiceMonth } from '@/app/actions/invoices'
+import { deleteCardInvoice } from '@/app/actions/invoices'
+import MonthPicker from '@/components/ui/MonthPicker'
 import InvoiceImport from '@/components/invoices/InvoiceImport'
+import InvoiceMonthEditor from '@/components/invoices/InvoiceMonthEditor'
 import InvoiceItems from '@/components/invoices/InvoiceItems'
 import StatementTabs from '@/components/invoices/StatementTabs'
 import StatementAnalysis from '@/components/invoices/StatementAnalysis'
@@ -15,9 +18,9 @@ import type { InvoiceData } from '@/types/invoices'
 import type { ExpenseCategoryOption } from '@/types/database'
 import styles from '@/components/invoices/invoices.module.css'
 
-interface InvoicesClientProps { data: InvoiceData; categories: ExpenseCategoryOption[]; initialMonth?: string; initialInvoice?: string }
+interface InvoicesClientProps { data: InvoiceData; categories: ExpenseCategoryOption[]; initialMonth?: string; initialInvoice?: string; reimbursements?: Reimbursement[] }
 
-export default function InvoicesClient({ data, categories, initialMonth, initialInvoice }: InvoicesClientProps) {
+export default function InvoicesClient({ data, categories, initialMonth, initialInvoice, reimbursements = [] }: InvoicesClientProps) {
   const [importOpen, setImportOpen] = useState(false)
   const [analysis, setAnalysis] = useState(false)
   const [selectedId, setSelectedId] = useState(initialInvoice ?? '')
@@ -37,7 +40,7 @@ export default function InvoicesClient({ data, categories, initialMonth, initial
     <StatementTabs active="card" />
     {!data.available && <p role="status" className={styles.notice}>Aplique a nova migração de extratos no Supabase para ativar esta tela.</p>}
     <section className={`glass-card ${styles.panel} ${styles.row}`}>
-      <label className={styles.grow}>Mês da fatura<input aria-label="Mês da fatura" className="input" type="month" value={month} onChange={event => { if (event.target.value) { setMonth(event.target.value); setSelectedId('') } }} /></label>
+      <div className={styles.grow}><MonthPicker label="Mês da fatura" value={month} months={invoices.map(invoice => invoice.statement_month.slice(0, 7))} onChange={value => { setMonth(value); setSelectedId('') }} /></div>
       <div className={styles.grow}><label htmlFor="invoice-select">Fatura</label><select id="invoice-select" className="input" value={selected?.id ?? ''} onChange={event => setSelectedId(event.target.value)}>
         <option value="">Todas as faturas do mês ({monthlyInvoices.length})</option>
         {monthlyInvoices.map(invoice => <option key={invoice.id} value={invoice.id}>{invoice.card_label} · final {invoice.card_last_four} · {formatCurrency(invoice.total_cents / 100)}</option>)}
@@ -50,14 +53,8 @@ export default function InvoicesClient({ data, categories, initialMonth, initial
     {!analysis && shown.map(invoice => <section key={invoice.id} className={`glass-card ${styles.panel} ${styles.stack}`}>
       <div className={styles.between}><h2 className={styles.title}>{invoice.card_label} · final {invoice.card_last_four}</h2><strong>{formatCurrency(invoice.total_cents / 100)}</strong></div>
       <p className={styles.muted}>Vencimento: {formatDate(invoice.due_date)} · referência: {invoice.statement_month.slice(5, 7)}/{invoice.statement_month.slice(0, 4)}</p>
-      <details><summary className={styles.link}>Alterar mês de referência</summary>
-        <form className={styles.row} onSubmit={event => {
-          event.preventDefault()
-          const value = String(new FormData(event.currentTarget).get('month'))
-          startTransition(async () => { try { await updateInvoiceMonth(invoice.id, value); setMonth(value); setSelectedId(invoice.id); toast.success('Mês atualizado.') } catch (error) { toast.error(error instanceof Error ? error.message : 'Falha ao alterar mês.') } })
-        }}><label className={styles.grow}>Mês<input type="month" name="month" required className="input" defaultValue={invoice.statement_month.slice(0, 7)} disabled={pending} /></label><button className="btn-ghost" disabled={pending}>Salvar mês</button></form>
-      </details>
-      <InvoiceItems key={invoice.id + data.items.filter(item => item.invoice_id === invoice.id).map(item => item.category_id).join()} items={data.items.filter(item => item.invoice_id === invoice.id).sort((a, b) => a.position - b.position)} categories={categories} />
+      <InvoiceMonthEditor key={invoice.id + invoice.statement_month} invoice={invoice} onSaved={value => { setMonth(value); setSelectedId(invoice.id) }} />
+      <InvoiceItems key={invoice.id + data.items.filter(item => item.invoice_id === invoice.id).map(item => item.category_id).join()} items={data.items.filter(item => item.invoice_id === invoice.id).sort((a, b) => a.position - b.position)} categories={categories} reimbursements={reimbursements} />
       <button className="btn-danger" disabled={pending} onClick={() => setDeleteId(invoice.id)}>Excluir esta fatura</button>
     </section>)}
     {importOpen && <InvoiceImport categories={categories} onClose={(importedMonth, invoiceId) => { setImportOpen(false); if (importedMonth) setMonth(importedMonth); if (invoiceId) setSelectedId(invoiceId) }} />}

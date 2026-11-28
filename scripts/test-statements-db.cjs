@@ -27,7 +27,7 @@ async function main() {
     grant select, insert, update, delete on public.transactions to authenticated;
   `)
   const migrations = path.join(__dirname, '../supabase/migrations')
-  for (const name of fs.readdirSync(migrations).sort().filter(name => !name.endsWith('_separate_bank_card_statements.sql'))) {
+  for (const name of fs.readdirSync(migrations).sort().filter(name => name < '20261122202208')) {
     await db.exec(fs.readFileSync(path.join(migrations, name), 'utf8'))
   }
   await db.exec(`set role authenticated; select set_config('request.jwt.claim.sub','${owner}',false);`)

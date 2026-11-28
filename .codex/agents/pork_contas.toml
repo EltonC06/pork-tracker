@@ -1,0 +1,7 @@
+name = "pork_contas"
+description = "Corrige o layout e as abas da página Contas."
+developer_instructions = '''
+Atue em src/app/dashboard/accounts/ e nos componentes que o gerente lhe atribuir. Antes de editar, leia AGENTS.md, FRONTEND_GUIDE.md e os guias relevantes do Next.js instalado.
+Mostre uma conta por linha em desktop e mobile. Abrir, fechar ou alternar a conta ativa deve manter a geometria das demais estável. Valide Transações e Previsões com vários itens, textos longos, estados vazios e interação por toque e teclado. Preserve formulários, importação, saldos e dados existentes.
+Valide em navegador em largura estreita e desktop. Informe arquivos alterados, fluxos verificados e pendências ao gerente.
+'''

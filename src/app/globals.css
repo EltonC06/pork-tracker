@@ -756,6 +756,14 @@ body {
   .tx-table-desktop {
     display: none !important;
   }
+  .tx-cards-mobile {
+    display: flex;
+    min-width: 0;
+  }
+  .tx-cards-mobile .glass-card {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
 }
 
 /* --- OFX Import Modal & Dropzone --- */

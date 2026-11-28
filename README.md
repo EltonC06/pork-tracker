@@ -4,19 +4,33 @@ Um sistema pessoal completo para planejamento financeiro, focado em alta perform
 
 ## 🚀 Funcionalidades
 
-### Extratos separados (v2.6)
+### Atualização de usabilidade (v2.8)
 
-- **Geral** (`/dashboard/statement`): banco + compras do cartão, excluindo despesas bancárias da categoria **Pagamento de fatura**. A exclusão é por categoria, mesmo que a fatura correspondente ainda não tenha sido importada. Os totais incluem somente compras conhecidas; classifique os pagamentos no banco e importe os PDFs de cada mês para completar o histórico.
+- Contas em uma coluna, com expansão independente, abas acessíveis por teclado e listas adaptadas ao celular.
+- Uma entrada **Extrato** no menu, com **Geral**, **Movimentações** e **Faturas**. O Geral destaca **Gasto do mês** pelo mês completo, independentemente da busca na lista. As projeções de 12 meses e a impressão do antigo Resumo continuam disponíveis pelo acesso **Projeções e PDF**.
+- O consumo combina lançamentos bancários e parcelas importadas do cartão uma única vez. Pagamentos de fatura e transferências explicitamente identificadas como próprias ficam fora do Geral e continuam em Movimentações. Pix, depósito ou transferência genérica não bastam para excluir um lançamento; revise a descrição quando necessário. Estornos reduzem o gasto. O acompanhamento de reembolsos mantém a regra local existente: não altera o valor do gasto nem cria receita automaticamente.
+- Faturas distinguem o **mês de referência**, usado para contabilizar a fatura, da **data da compra**, usada nos filtros e agrupamentos da lista. Busca, filtros, ordenação e agrupamento por dia, semana, mês ou sem agrupamento apresentam subtotais dos itens filtrados.
+- Temas **Claro**, **Escuro** e **Sistema**, com preferência visual persistida e tokens compartilhados.
+
+#### Base e limites desta rodada
+
+A branch de atualização preserva o trabalho local anterior de reembolsos, identificação de pagamentos e controles de mês, e integra as melhorias de responsividade da `main`. Categorias e suas regras de cadastro permanecem preservadas. O esquema remoto foi conferido em leitura: as duas migrações de novembro já estão no histórico. A migração adicional de reembolsos continua preparada localmente e **não foi aplicada remotamente**; enquanto ausente, a página informa indisponibilidade sem impedir os demais extratos.
+
+Esta rodada termina em PR e verificação do preview. Merge, deploy de produção e migrações remotas exigem autorização separada.
+
+### Extratos e navegação (v2.7)
+
+- **Geral** (`/dashboard/statement`): banco + compras do cartão, excluindo pagamentos bancários reconhecidos pela categoria **Pagamento de fatura**, pelo nome legado **Fatura** ou por descrição explícita de pagamento da fatura/cartão. A exclusão independe de vínculo, coincidência de valor ou PDF já importado. Os totais incluem somente compras conhecidas; classifique os pagamentos no banco e importe os PDFs de cada mês para completar o histórico.
 - **Banco** (`/dashboard/transactions`): preserva todos os lançamentos da conta, inclusive pagamentos de faturas. Contas, snapshots e fluxo de caixa continuam independentes das compras no cartão.
 - **Cartão** (`/dashboard/invoices`): faturas por mês de referência, com seletor de fatura, compras, categorias, valores, percentuais e gráficos. Não há associação de fatura a pagamento.
-- As três telas compartilham abas de navegação. Geral e Cartão abrem nos lançamentos; o controle “Análise por categoria” mostra os gráficos mantendo os filtros e totais. Ações e Gráficos continuam ocultos do menu principal.
+- A sidebar contém apenas **Extrato**, ativo nas três rotas; Geral, Banco e Cartão ficam somente nas abas internas. Geral e Cartão abrem nos lançamentos; o controle “Análise por categoria” mostra os gráficos mantendo os filtros e totais. Ações e Gráficos continuam ocultos do menu principal.
 - Exemplo: Pix de R$20 + compras de R$180 + pagamento da fatura de R$180. Banco registra R$200 em saídas; cartão registra R$180; geral registra R$200, excluindo o pagamento classificado.
 
 #### Importação e mês de referência
 
 Importe o PDF textual do Inter e revise o nome do cartão, mês, vencimento, total e categorias. As categorias usam o catálogo pessoal por dropdown, tanto na revisão quanto após salvar. Sugestões desconhecidas ficam sem categoria. A revisão tem dez itens por página. A leitura usa PDF.js localmente; o PDF e os dados pessoais do cabeçalho não são enviados ao servidor.
 
-O mês sugerido é o mês com mais lançamentos no PDF, com desempate pelo mais recente. Pode ser alterado antes e depois da importação. O vencimento identifica a fatura e não determina seu mês. Uma fatura de outubro que vence em novembro pode ser classificada em outubro. Faturas antigas recebem essa mesma sugestão na migração; revise compras parceladas com data original antiga.
+O seletor de período possui mês e ano separados, botões anterior/próximo e retorno ao mês atual, em todas as visões e na revisão do PDF. O mês sugerido é o mês com mais lançamentos no PDF, com desempate pelo mais recente. Pode ser alterado antes e depois da importação. O vencimento identifica a fatura e não determina seu mês. Uma fatura de outubro que vence em novembro pode ser classificada em outubro. Faturas antigas recebem essa mesma sugestão na migração; revise compras parceladas com data original antiga.
 
 Os gráficos e o geral usam o mês de referência para todas as compras da fatura. A lista preserva a data original do PDF e a parcela atual. Só o valor da parcela lançada entra nos gastos; estornos reduzem despesas. Percentuais usam saldos positivos por categoria; categorias com saldo negativo continuam na lista, fora da pizza. O banco usa a data do lançamento.
 
@@ -26,7 +40,7 @@ A importação é atômica: soma dos itens conferida no commit, valores em centa
 
 Após as migrações de categorias e [card_invoice_reconciliation](./supabase/migrations/20261122191752_card_invoice_reconciliation.sql), execute **somente a nova** [separate_bank_card_statements](./supabase/migrations/20261122202208_separate_bank_card_statements.sql) no SQL Editor do ambiente correspondente. Não reexecute migrações já aplicadas nem scripts de clean start.
 
-A nova migração adiciona mês de referência e categoria por ID às compras. Preserva as faturas existentes, cadastra os nomes antigos no catálogo e converte os pagamentos anteriormente vinculados para a categoria **Pagamento de fatura** (o lançamento bancário completo, inclusive quando o vínculo antigo era parcial). Os vínculos ficam como histórico de leitura, deixam de bloquear alterações ou exclusão no banco e não participam mais dos cálculos. Novos vínculos são desabilitados. Pagamentos nunca vinculados precisam ser classificados pelo usuário; o OFX sugere a categoria para descrições explícitas, sempre com revisão.
+A nova migração adiciona mês de referência e categoria por ID às compras. Preserva as faturas existentes, cadastra os nomes antigos no catálogo e converte os pagamentos anteriormente vinculados para a categoria **Pagamento de fatura** (o lançamento bancário completo, inclusive quando o vínculo antigo era parcial). Os vínculos ficam como histórico de leitura, deixam de bloquear alterações ou exclusão no banco e não participam mais dos cálculos. Novos vínculos são desabilitados. Pagamentos antigos também são reconhecidos pela descrição explícita, mesmo com categoria incorreta, como Lazer. A seção “Pagamentos de fatura fora do geral” detalha as exclusões do mês. O OFX usa a mesma regra de reconhecimento. Descrições genéricas não são excluídas apenas pelo valor; nesses casos, escolha Pagamento de fatura no banco.
 
 A tela informa indisponibilidade e desabilita importação enquanto falta a nova migração. O geral e o dashboard avisam que o total está restrito ao banco. A migração local não representa aplicação ou validação em produção. Excluir uma fatura remove suas compras do cartão e do geral, preservando o banco e sua classificação.
 
@@ -37,6 +51,20 @@ A tela informa indisponibilidade e desabilita importação enquanto falta a nova
 - `node scripts/test-invoice-db.cjs "caminho/runtime-temporario"`: teste de regressão da migração original, anterior à separação dos extratos.
 - Excel mantém banco, faturas e itens separados e acrescenta `Extrato_Geral` calculado pela mesma regra da tela, além de instruções de interpretação. Não somar abas de caixa e consumo.
 - Componentes podem ser verificados isoladamente em navegador; isso não substitui a validação autenticada com Supabase em um ambiente de teste.
+
+### Reembolsos (v2.7)
+
+Em `/dashboard/reimbursements`, associe uma despesa do banco ou uma compra do cartão, informe o motivo e o prazo para cobrar. O acompanhamento usa quatro situações: **Ainda a cobrar**, **Já cobrado**, **Não reembolsado** e **Reembolsado**. Elas aparecem como informação adicional junto à categoria original nos extratos; não substituem o catálogo de categorias.
+
+Ao marcar Reembolsado, o registro sai da lista principal e aparece na seção recolhida **Já reembolsados**. Editar a situação permite trazê-lo de volta. A página tem busca, filtro, valores em acompanhamento e prazos vencidos (apenas Ainda a cobrar/Já cobrado). O prazo é um lembrete visual, sem envio automático de cobranças.
+
+Um gasto pode ter um único acompanhamento, inclusive depois de recebido. Receitas, estornos e pagamentos agregados de fatura não podem ser selecionados. O banco valida o proprietário e registra o valor, a descrição e a data originais no momento da associação. Esse valor é o valor acompanhado e não muda automaticamente ao editar o lançamento. Excluir o gasto ou sua fatura preserva o acompanhamento e seu histórico, removendo somente a referência. Excluir o acompanhamento preserva o gasto.
+
+O status não cria transação financeira, não reduz despesas e não concilia uma receita automaticamente: o registro efetivo do recebimento continua no extrato bancário. A exportação Excel inclui os acompanhamentos, inclusive os já reembolsados.
+
+**Migração adicional:** após as migrações anteriores, execute [reimbursements_and_invoice_payment_classification](./supabase/migrations/20261122211239_reimbursements_and_invoice_payment_classification.sql). Ela normaliza pagamentos explícitos antigos para Pagamento de fatura sem alterar valores, contas ou datas e adiciona reembolsos com RLS, privilégios por coluna, proteção contra duplicatas e snapshot validado no banco. Enquanto faltar essa migração, a página de reembolsos informa indisponibilidade e as outras telas seguem funcionando. O reconhecimento de pagamento nos cálculos também funciona antes do backfill SQL.
+
+**Validação:** `npm run test:invoices` cobre a regra única de pagamentos, casos legados, virada de mês/ano e acompanhamento. `node scripts/test-reimbursements-db.cjs "caminho/runtime-temporario"` aplica as migrações em PostgreSQL temporário e testa associação banco/cartão, recebimento/reabertura, duplicatas, fontes inválidas, isolamento de usuários, snapshot e exclusão dos originais. A validação local não equivale a migração ou teste autenticado em produção.
 
 ### Categorias de despesas (v2.4)
 - Categorias iniciais e categorias personalizadas por usuário, selecionadas em dropdown nos lançamentos e na revisão OFX.
@@ -216,6 +244,27 @@ npm run dev
 ```
 
 Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
+
+---
+
+## Equipe de agentes do Codex
+
+Os perfis do projeto ficam em [`.codex/agents/`](.codex/agents/). Abra o Pork no Codex local e inicie um chat a partir da raiz do repositório. Para usar o perfil de coordenação no chat principal, envie esta instrução:
+
+> Leia `.codex/agents/pork_gerente.toml` e assuma esse papel no chat principal. Use os subagentes personalizados do Pork pelo nome, em ondas de até três. Comece inventariando o trabalho local e delegue a `pork_supabase` a comparação entre o esquema e o histórico remoto em modo de leitura. Antes de executar, use o escopo e as autorizações que eu indicar neste chat.
+
+| Perfil | Responsabilidade |
+| --- | --- |
+| `pork_gerente` | Requisitos, divisão de trabalho, integração e entrega |
+| `pork_contas` | Uma conta por linha e abas Transações e Previsões |
+| `pork_extrato` | Navegação de extratos, gasto mensal e aproveitamento do Resumo |
+| `pork_faturas` | Seleção de faturas, busca, ordenação e agrupamentos |
+| `pork_interface` | Tema claro, escuro e do sistema e revisão visual |
+| `pork_mobile` | Verificação no navegador e correções de responsividade |
+| `pork_supabase` | Diagnóstico do esquema, testes e migrações autorizadas |
+| `pork_qa` | Validação independente depois da integração e antes do merge |
+
+Os subagentes herdam o modelo e os acessos do chat que os abriu. Indique no pedido se a rodada termina em diagnóstico, implementação local, PR ou merge. A aplicação de migrações remotas depende do destino e da autorização definidos no pedido.
 
 ---
 

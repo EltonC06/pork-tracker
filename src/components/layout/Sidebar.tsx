@@ -10,9 +10,8 @@ import {
   LineChart,
   LogOut,
   Home,
-  Calendar,
   Receipt,
-  CreditCard,
+  HandCoins,
   Tags,
   Settings,
 } from 'lucide-react'
@@ -20,11 +19,9 @@ import {
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/dashboard/accounts', label: 'Contas', icon: Wallet },
-  { href: '/dashboard/statement', label: 'Extrato geral', icon: Receipt },
-  { href: '/dashboard/transactions', label: 'Banco', icon: Receipt },
-  { href: '/dashboard/invoices', label: 'Cartão', icon: CreditCard },
+  { href: '/dashboard/statement', label: 'Extrato', icon: Receipt },
+  { href: '/dashboard/reimbursements', label: 'Reembolsos', icon: HandCoins },
   { href: '/dashboard/categories', label: 'Categorias', icon: Tags },
-  { href: '/dashboard/planning', label: 'Resumo', icon: Calendar },
 ]
 
 interface SidebarProps {
@@ -89,7 +86,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         {navItems.map(({ href, label, icon: Icon }) => {
           const isActive = href === '/dashboard'
             ? pathname === '/dashboard'
-            : pathname.startsWith(href)
+            : href === '/dashboard/statement' ? ['/dashboard/statement', '/dashboard/transactions', '/dashboard/invoices', '/dashboard/planning'].some(path => pathname.startsWith(path)) : pathname.startsWith(href)
           return (
             <Link
               key={href}
@@ -150,7 +147,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               borderRadius: '4px',
               border: '1px solid var(--bg-border)'
             }}>
-              v2.6
+              v2.8
             </span>
             
             {showVersion && (
@@ -169,14 +166,17 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 pointerEvents: 'none',
               }}>
                 <h4 style={{ fontSize: '0.75rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 600 }}>
-                  v2.6 (Atual)
+                  v2.8 (Atual)
                 </h4>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.6875rem', color: 'var(--text-secondary)' }}>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Extratos separados: banco, cartão e geral, sem duplicar o pagamento da fatura.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Extrato com Geral, Movimentações e Faturas; Gasto do mês em destaque, sem repetir pagamentos.
                   </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Faturas com mês de referência, categorias por seletor e gráficos de gastos.
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Contas em lista, filtros e agrupamentos nas faturas e temas Claro, Escuro e Sistema.
+                  </li>
+                  <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
+                    <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Mês e ano com navegação rápida; reembolsos por gasto, prazo e situação.
                   </li>
                   <li style={{ marginBottom: '0.25rem', position: 'relative', paddingLeft: '0.75rem', lineHeight: 1.4 }}>
                     <span style={{ position: 'absolute', left: 0, color: 'var(--brand-400)' }}>•</span> Categorias cadastráveis com seletor nos lançamentos e importação OFX.

@@ -1,5 +1,8 @@
 'use client'
 
+import ReimbursementBadge from '@/components/ui/ReimbursementBadge'
+import { reimbursementFor } from '@/lib/reimbursements'
+import type { Reimbursement } from '@/types/reimbursements'
 import ExpenseCategorySelect from '@/components/ui/ExpenseCategorySelect'
 import type { ExpenseCategoryOption } from '@/types/database'
 import { isInvoicePayment } from '@/lib/statements'
@@ -10,9 +13,9 @@ import type { CardInvoiceItem } from '@/types/invoices'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import styles from './invoices.module.css'
 
-interface InvoiceItemsProps { items: CardInvoiceItem[]; categories: ExpenseCategoryOption[] }
+interface InvoiceItemsProps { items: CardInvoiceItem[]; categories: ExpenseCategoryOption[]; reimbursements?: Reimbursement[] }
 
-export default function InvoiceItems({ items, categories }: InvoiceItemsProps) {
+export default function InvoiceItems({ items, categories, reimbursements = [] }: InvoiceItemsProps) {
   const [page, setPage] = useState(0)
   const [pending, startTransition] = useTransition()
   const pageCount = Math.ceil(items.length / 20)
@@ -22,6 +25,7 @@ export default function InvoiceItems({ items, categories }: InvoiceItemsProps) {
     {items.slice(page * 20, page * 20 + 20).map(item => <article key={item.id} className={styles.item}>
       <div className={styles.between}><strong>{item.description}</strong><strong>{formatCurrency(item.amount_cents / 100)}</strong></div>
       <p className={styles.muted}>{formatDate(item.date)} · final {item.card_last_four}{item.installment ? ` · parcela ${item.installment}/${item.installments}` : ''}{item.amount_cents < 0 ? ' · estorno/crédito' : ''}</p>
+      <ReimbursementBadge record={reimbursementFor(reimbursements, 'card', item.id)} />
       <form className={styles.row} onSubmit={event => {
         event.preventDefault()
         const category = String(new FormData(event.currentTarget).get('category_id') ?? '')

@@ -1,6 +1,6 @@
 'use client'
 
-import { buildStatement, isInvoicePayment } from '@/lib/statements'
+import { buildStatement, isInvoicePaymentTransaction } from '@/lib/statements'
 import { useState } from 'react'
 import { Download } from 'lucide-react'
 import { toast } from 'sonner'
@@ -46,7 +46,7 @@ export default function GlobalExportBtn() {
           Tipo: t.type === 'income' ? 'Receita' : 'Despesa',
           Categoria: t.category || '',
           Valor: t.amount,
-          ForaDoExtratoGeral: t.type === 'expense' && isInvoicePayment(t.category),
+          ForaDoExtratoGeral: isInvoicePaymentTransaction(t),
           Descricao: t.description || ''
         }
       }))
@@ -58,10 +58,12 @@ export default function GlobalExportBtn() {
         Origem: entry.source === 'card' ? 'Cartão' : 'Banco', MesReferencia: entry.date.slice(0, 7), DataOriginal: entry.originalDate, Descricao: entry.description, Categoria: entry.category, Tipo: entry.type, Valor: entry.amount,
       }))), 'Extrato_Geral')
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([
-        { Regra: 'Extrato_Geral combina banco e cartão e exclui despesas bancárias da categoria Pagamento de fatura.' },
+        { Regra: 'Extrato_Geral combina banco e cartão e exclui pagamentos de fatura reconhecidos pela categoria ou descrição explícita.' },
         { Regra: 'Compras do cartão usam statement_month; transações bancárias usam a data do lançamento.' },
         { Regra: 'Valores _cents estão em centavos; estornos reduzem despesas. Somente faturas importadas entram no geral.' },
       ]), 'Como_Interpretar')
+
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data.reimbursementData.records), 'Reembolsos')
 
       // Sheet 4: Ações (Posições)
       const stocksSheet = XLSX.utils.json_to_sheet(data.positions.map(p => ({

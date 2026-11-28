@@ -26,9 +26,13 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import FormModal from '@/components/ui/FormModal'
 import OfxImportModal from '@/components/ui/OfxImportModal'
 import EmptyState from '@/components/ui/EmptyState'
+import MonthPicker from '@/components/ui/MonthPicker'
+import ReimbursementBadge from '@/components/ui/ReimbursementBadge'
+import { reimbursementFor } from '@/lib/reimbursements'
+import type { Reimbursement } from '@/types/reimbursements'
+import { currentMonth as getCurrentMonth, monthBounds } from '@/lib/months'
 import StatementTabs from '@/components/invoices/StatementTabs'
-import { isInvoicePayment } from '@/lib/statements'
-import Link from 'next/link'
+import { isInvoicePaymentTransaction } from '@/lib/statements'
 import ExpenseCategorySelect from '@/components/ui/ExpenseCategorySelect'
 import type { Transaction, AccountType, ExpenseCategoryOption } from '@/types/database'
 
@@ -36,9 +40,11 @@ interface TransactionsClientProps {
   initialTransactions: Transaction[]
   accounts: AccountType[]
   categories: ExpenseCategoryOption[]
+  reimbursements?: Reimbursement[]
 }
 
 type PeriodPreset =
+  | 'month'
   | 'this_month'
   | 'last_month'
   | 'last_30_days'
@@ -53,6 +59,7 @@ export default function TransactionsClient({
   initialTransactions,
   accounts,
   categories,
+  reimbursements = [],
 }: TransactionsClientProps) {
   const [isPending, startTransition] = useTransition()
 
@@ -61,7 +68,8 @@ export default function TransactionsClient({
   const [selectedAccountId, setSelectedAccountId] = useState<string>('all')
   const [selectedType, setSelectedType] = useState<'all' | 'expense' | 'income'>('all')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [periodPreset, setPeriodPreset] = useState<PeriodPreset>('this_month')
+  const [periodPreset, setPeriodPreset] = useState<PeriodPreset>('month')
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth)
   const [customStartDate, setCustomStartDate] = useState('')
   const [customEndDate, setCustomEndDate] = useState('')
   const [groupBy, setGroupBy] = useState<GroupByMode>('day')
@@ -94,6 +102,7 @@ export default function TransactionsClient({
 
   // Date range calculation for period filters
   const dateRange = useMemo(() => {
+    if (periodPreset === 'month') return monthBounds(selectedMonth)
     const now = new Date()
     const currentYear = now.getFullYear()
     const currentMonth = now.getMonth() // 0-indexed
@@ -150,7 +159,7 @@ export default function TransactionsClient({
 
     // 'all'
     return { start: '1970-01-01', end: '2099-12-31' }
-  }, [periodPreset, customStartDate, customEndDate])
+  }, [periodPreset, selectedMonth, customStartDate, customEndDate])
 
   // Filtered transactions
   const filteredTransactions = useMemo(() => {
@@ -231,14 +240,15 @@ export default function TransactionsClient({
     selectedAccountId !== 'all' ||
     selectedType !== 'all' ||
     selectedCategory !== 'all' ||
-    periodPreset !== 'this_month'
+    (periodPreset !== 'month' || selectedMonth !== getCurrentMonth())
 
   const handleClearFilters = () => {
     setSearchQuery('')
     setSelectedAccountId('all')
     setSelectedType('all')
     setSelectedCategory('all')
-    setPeriodPreset('this_month')
+    setPeriodPreset('month')
+    setSelectedMonth(getCurrentMonth())
     setCustomStartDate('')
     setCustomEndDate('')
   }
@@ -442,9 +452,6 @@ export default function TransactionsClient({
 
       <StatementTabs active="bank" />
       {/* Summary KPI Cards */}
-      <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-        <Link href="/dashboard/invoices" style={{ color: 'var(--brand-400)' }}>Ver extrato do cartão</Link>
-      </p>
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
@@ -501,12 +508,16 @@ export default function TransactionsClient({
         />
       </div>
 
+      <section className="glass-card" style={{ padding: '1rem', marginBottom: '1rem' }}>
+        <MonthPicker label="Extrato bancário" value={selectedMonth} months={initialTransactions.map(tx => tx.date.slice(0, 7))} onChange={value => { setSelectedMonth(value); setPeriodPreset('month') }} />
+        {periodPreset !== 'month' && <p style={{ color: 'var(--text-secondary)', fontSize: '.8125rem', marginTop: '.5rem' }}>Filtro por intervalo ativo abaixo. Selecione um mês para voltar ao filtro mensal.</p>}
+      </section>
       {/* Filter and Search Bar */}
       <div className="filter-bar" style={{ marginBottom: '1.5rem' }}>
         {/* Top filter row: Search input + Period Select + Group By */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))',
           gap: '0.75rem',
           alignItems: 'center',
         }}>
@@ -608,20 +619,6 @@ export default function TransactionsClient({
             </span>
             <button
               type="button"
-              className={`filter-chip ${periodPreset === 'this_month' ? 'active' : ''}`}
-              onClick={() => setPeriodPreset('this_month')}
-            >
-              Este Mês
-            </button>
-            <button
-              type="button"
-              className={`filter-chip ${periodPreset === 'last_month' ? 'active' : ''}`}
-              onClick={() => setPeriodPreset('last_month')}
-            >
-              Mês Anterior
-            </button>
-            <button
-              type="button"
               className={`filter-chip ${periodPreset === 'last_30_days' ? 'active' : ''}`}
               onClick={() => setPeriodPreset('last_30_days')}
             >
@@ -658,7 +655,7 @@ export default function TransactionsClient({
           </div>
 
           {/* Grouping Selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', minWidth: 0, alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Agrupar:</span>
             <div style={{
               display: 'inline-flex',
@@ -860,7 +857,8 @@ export default function TransactionsClient({
                           {/* Description */}
                           <td style={{ fontWeight: 500, color: 'var(--text-primary)' }}>
                             {tx.description || 'Sem descrição'}
-                            {tx.type === 'expense' && isInvoicePayment(categories.find(category => category.id === tx.category_id)?.name ?? tx.category) && <div><Link href="/dashboard/invoices" className="badge badge-neutral">Fora do extrato geral</Link></div>}
+                            <ReimbursementBadge record={reimbursementFor(reimbursements, 'bank', tx.id)} />
+                            {isInvoicePaymentTransaction(tx, categories) && <div><span className="badge badge-neutral">Fora do extrato geral</span></div>}
                           </td>
 
                           {/* Category badge */}
@@ -970,10 +968,10 @@ export default function TransactionsClient({
                       </div>
 
                       {/* Middle: Description + Category */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
                         <span style={{ fontWeight: 600, fontSize: '0.9375rem', color: 'var(--text-primary)' }}>
                           {tx.description || 'Sem descrição'}
-                          {tx.type === 'expense' && isInvoicePayment(categories.find(category => category.id === tx.category_id)?.name ?? tx.category) && <span className="badge badge-neutral">Fora do extrato geral</span>}
+                          {isInvoicePaymentTransaction(tx, categories) && <span className="badge badge-neutral">Fora do extrato geral</span>}
                         </span>
                         {tx.category && (
                           <span className="badge badge-neutral" style={{ fontSize: '0.6875rem' }}>
@@ -982,6 +980,7 @@ export default function TransactionsClient({
                         )}
                       </div>
 
+                      <ReimbursementBadge record={reimbursementFor(reimbursements, 'bank', tx.id)} />
                       {/* Bottom: Amount + Actions */}
                       <div style={{
                         display: 'flex',

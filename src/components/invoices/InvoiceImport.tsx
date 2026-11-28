@@ -1,5 +1,6 @@
 'use client'
 
+import MonthPicker from '@/components/ui/MonthPicker'
 import ExpenseCategorySelect from '@/components/ui/ExpenseCategorySelect'
 import type { ExpenseCategoryOption } from '@/types/database'
 import { isInvoicePayment, suggestedStatementMonth } from '@/lib/statements'
@@ -70,8 +71,7 @@ export default function InvoiceImport({ onClose, categories }: InvoiceImportProp
             <div><dt>Total declarado</dt><dd>{formatCurrency(invoice.totalCents / 100)}</dd></div>
             <div><dt>Itens conferidos</dt><dd>{invoice.items.length}</dd></div>
           </dl>
-          <label className="label" htmlFor="invoice-month">Mês de referência da fatura</label>
-          <input id="invoice-month" className="input" type="month" required value={month} disabled={pending} onChange={event => { setMonth(event.target.value); setReviewed(false) }} />
+          <MonthPicker label="Mês de referência da fatura" value={month} months={invoice.items.map(item => item.date.slice(0, 7))} disabled={pending} onChange={value => { setMonth(value); setReviewed(false) }} />
           <p className={styles.muted}>Este é o mês usado nos filtros e gráficos. Sugerimos o mês com mais compras no PDF; ajuste se necessário.</p>
           <label className="label" htmlFor="card-label">Nome do cartão · final {invoice.cardLastFour}</label>
           <input id="card-label" className="input" value={label} maxLength={80} onChange={event => setLabel(event.target.value)} disabled={pending} />

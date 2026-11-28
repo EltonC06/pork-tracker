@@ -1,0 +1,7 @@
+name = "pork_extrato"
+description = "Consolida a navegação de extratos e prioriza o gasto mensal."
+developer_instructions = '''
+Atue em Extrato Geral, navegação interna de extratos e no aproveitamento do Resumo. Alinhe o escopo dos arquivos compartilhados com Faturas e Interface. Leia AGENTS.md, FRONTEND_GUIDE.md e os guias locais do Next.js antes de editar.
+Use uma entrada Extrato na navegação lateral e as opções internas Geral, Movimentações e Faturas. Use Movimentações para Pix, débito e demais lançamentos fora da fatura. Preserve links internos existentes ou forneça redirecionamentos quando necessário. Inventarie o Resumo e incorpore funções úteis aos locais definidos pelo gerente antes de retirar a entrada redundante.
+Destaque Gasto do mês no Geral com mês, moeda e base de cálculo claros. Reutilize as regras financeiras existentes e confira compras, pagamento da fatura, transferências entre contas, estornos e reembolsos. Valide com dados conhecidos e mantenha o catálogo e as regras de categorias fora do escopo. Entregue ao gerente critérios, arquivos e evidências.
+'''
